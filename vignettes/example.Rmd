@@ -54,8 +54,7 @@ In data set, `CA125` and `CA153` are two biomarkers, `Age` is the age of the pat
 The ROC surface and VUS are only applied when an monotone increasing ordering is of interest. Thus, before estimate ROC and also VUS, we have to be sure that the ordering of disease classes is monotone incresasing (with respect to the diagnostic test values). In order to do that, the function `preDATA()` is usefull. 
 
 ```{r preDiseaseFULL, eval=TRUE}
-attach(EOC)
-Dfull <- preDATA(D.full, CA125)
+Dfull <- preDATA(EOC$D.full, EOC$CA125)
 ```
 
 On the other hand, we describe the full diease status `D.full` as the binary matrix having three columns, correspondings to three classes of the disease status. Each row corresponds to a trinomial vector, in which, 1 indicates the subject belongs to class j with j = 1,2,3. The function `preDATA()` also done this work.
@@ -89,23 +88,24 @@ library(rgl)
 knit_hooks$set(webgl = hook_webgl)
 ```
 
-```{r ROCsFULL, webgl = TRUE}
+```{r ROCsFULL, webGL = TRUE}
 Dvec.full <- Dfull$Dvec
-full.roc <- ROCs(method = "full", T = CA125, Dvec = Dvec.full, ncp = 30,
-                 ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs(method = "full", T = EOC$CA125, Dvec = Dvec.full, ncp = 30, ellipsoid = TRUE,
+     cpst = c(-0.56, 2.31))
 ```
 
 Here, we consider the full data, so we only need to put the arguments `T` and `Dvec`, and method is `full`.
 
 The FULL estimator of VUS is obtained by the following command:
 ```{r vusfull, eval = FALSE}
-vus("full", T = CA125, Dvec = Dvec.full, ci = TRUE, parallel = TRUE)
+vus("full", T = EOC$CA125, Dvec = Dvec.full, ci = TRUE)
 ```
 
 ```
 ## Hmm, look likes the full data
 ## The verification status is not available
 ## You are working on FULL or Complete Case approach
+## Number of observation: 278
 ## The diagnostic test: CA125 
 ## Processing .... 
 ## DONE
@@ -124,7 +124,6 @@ vus("full", T = CA125, Dvec = Dvec.full, ci = TRUE, parallel = TRUE)
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
 ## Normal-test         10.596 < 2.2e-16 ***
-## Wald-test          112.270 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -133,7 +132,7 @@ vus("full", T = CA125, Dvec = Dvec.full, ci = TRUE, parallel = TRUE)
 Now, we compute the FI and MSI estimator with missing data. First, we need to estimate the disease probabilities by using multnomial logistic model. In bcROCsurface package, this work is done by using `rhoMLogit()` function.
 
 ```{r disease, eval = TRUE}
-Dna <- preDATA(D, CA125)
+Dna <- preDATA(EOC$D, EOC$CA125)
 Dvec.na <- Dna$Dvec
 D.na <- Dna$D
 rho.out <- rhoMLogit(D.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE, trace = TRUE)
@@ -141,16 +140,17 @@ rho.out <- rhoMLogit(D.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE, trace 
 
 The following command provides the ROC surface of FI esimator:
 ```{r ROCsFI, webgl = TRUE}
-fi.roc <- ROCs(method = "fi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, 
-               ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ncp = 30,
+     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 And, for VUS:
 ```{r vusfi,  eval=FALSE}
-vus(method = "fi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, ci = TRUE)
+vus(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ci = TRUE)
 ```
 
 ```
 ## Hmm, look likes the incomplete data
+## Number of observation: 278
 ## 64% of the subjects receive disease verification. 
 ## You required estimate VUS using FI approach 
 ## The diagnostic test: CA125 
@@ -171,23 +171,23 @@ vus(method = "fi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, ci = TRUE
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
 ## Normal-test         8.6168 < 2.2e-16 ***
-## Wald-test          74.2496 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
 
 For MSI estimator, we could do that to plot ROC surface
 ```{r ROCsMSI, webgl = TRUE}
-msi.roc <- ROCs(method = "msi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, 
-                ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ncp = 30,
+     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 and compute VUS
 ```{r vusmsi,  eval=FALSE}
-vus(method = "msi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, ci = TRUE)
+vus(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ci = TRUE)
 ```
 
 ```
 ## Hmm, look likes the incomplete data
+## Number of observation: 278
 ## 64% of the subjects receive disease verification. 
 ## You required estimate VUS using MSI approach 
 ## The diagnostic test: CA125 
@@ -208,7 +208,6 @@ vus(method = "msi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, ci = TRU
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
 ## Normal-test         8.4644 < 2.2e-16 ***
-## Wald-test          71.6463 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -222,16 +221,17 @@ pi.out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, model = "logit", test = TRU
 
 To plot the ROC surface and estimate VUS, we do
 ```{r ROCsIPW, webgl = TRUE}
-ipw.roc <- ROCs(method = "ipw", T = CA125, Dvec = Dvec.na, V = V, piEst = pi.out, 
-                ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ncp = 30,
+     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 
 ```{r vusipw, eval=FALSE}
-vus(method = "ipw", T = CA125, Dvec = Dvec.na, V = V, piEst = pi.out, ci = TRUE)
+vus(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ci = TRUE)
 ```
 
 ```
 ## Hmm, look likes the incomplete data
+## Number of observation: 278
 ## 64% of the subjects receive disease verification. 
 ## You required estimate VUS using IPW approach 
 ## The diagnostic test: CA125 
@@ -252,7 +252,6 @@ vus(method = "ipw", T = CA125, Dvec = Dvec.na, V = V, piEst = pi.out, ci = TRUE)
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
 ## Normal-test         9.2212 < 2.2e-16 ***
-## Wald-test          85.0302 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -260,16 +259,17 @@ vus(method = "ipw", T = CA125, Dvec = Dvec.na, V = V, piEst = pi.out, ci = TRUE)
 For SPE estimator, we type
 
 ```{r ROCsSPE, webgl = TRUE}
-spe.roc <- ROCs(method = "spe", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out,
-                piEst = pi.out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
+     piEst = pi.out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 to provide the plot of ROC surface, and 
 ```{r vusspe, eval=FALSE}
-vus(method = "spe", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out,
+vus(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
     piEst = pi.out, ci = TRUE)
 ```
 ```
 ## Hmm, look likes the incomplete data
+## Number of observation: 278
 ## 64% of the subjects receive disease verification. 
 ## You required estimate VUS using SPE approach 
 ## The diagnostic test: CA125 
@@ -290,7 +290,6 @@ vus(method = "spe", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out,
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##            Test Statistic   P-value    
 ## Normal-test          8.827 < 2.2e-16 ***
-## Wald-test           77.916 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -303,21 +302,22 @@ Like the MSI estimator, the KNN approach is based on the estimate of disease pro
 
 #### 1NN estimator
 ```{r 1nn, eval = TRUE}
-XX <- cbind(CA125, CA153, Age)
-rho.1nn <- rhoKNN(XX, Dvec.na, V, k = 1, type = "mahala")
+XX <- cbind(EOC$CA125, EOC$CA153, EOC$Age)
+rho.1nn <- rhoKNN(XX, Dvec = Dvec.na, V = EOC$V, K = 1, type = "mahala")
 ```
 ```{r ROCs1NN, webgl = TRUE}
-knn.roc <- ROCs("knn", CA125, Dvec.na, V = V, A = cbind(CA153, Age), 
-                rhoEst = rho.1nn, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+ROCs("knn", T = EOC$CA125, Dvec.na, V = EOC$V, rhoEst = rho.1nn, ncp = 30, ellipsoid = TRUE,
+     cpst = c(-0.56, 2.31))
 ```
 
 ```{r vus1nn, eval = FALSE}
-vus(method = "knn", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.1nn, ci = TRUE,
+vus(method = "knn", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.1nn, ci = TRUE,
     parallel = TRUE)
 ```
 
 ```
 ## Hmm, look likes the incomplete data
+## Number of observation: 278
 ## 64% of the subjects receive disease verification. 
 ## You required estimate VUS using KNN approach 
 ## The diagnostic test: CA125 
@@ -338,7 +338,6 @@ vus(method = "knn", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.1nn, ci = TRU
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
 ## Normal-test         7.3048 1.388e-13 ***
-## Wald-test          53.3608 2.776e-13 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -346,5 +345,5 @@ vus(method = "knn", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.1nn, ci = TRU
 To find the good choice for the number of nearest-neighbor, we use the following command:
 
 ```{r cvKnn, eval = TRUE}
-CVknn(XX, Dvec.na, V, type = "mahala", plot = TRUE)
+CVknn(XX, Dvec.na, EOC$V, type = "mahala", plot = TRUE)
 ```

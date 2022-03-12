@@ -32,4 +32,3 @@ This process leads to 63.4\% patients selected to undergo disease verification.
 The missing disease status D are the copies of the full disease status D.full, but some values corresponding to \eqn{V = 0} are deleted (refered as \code{NA} values).
 }
 \keyword{data}
-

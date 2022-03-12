@@ -13,7 +13,7 @@
 #' @param maxit  maximum number of iterations. Default 500.
 #' @param trace  switch for tracing estimation process. Default \code{FALSE}.
 #'
-#' @details In the formula, the response must be a factor with three levels, say 1, 2, 3. These levels correspond to three classes of disease status, e.g., non-dieseased, intermediate, diseased. The last class (class 3) is considered as the reference level in multinomal logistic model. In presence of verification bias, the missing (\code{NA}) values correspond to non verified subjects.
+#' @details In the formula, the response must be a result of \code{\link{preDATA}}, a factor with three levels, say 1, 2, 3. These levels correspond to three classes of disease status, e.g., non-dieseased, intermediate, diseased. The last class (class 3) is considered as the reference level in multinomal logistic model. In presence of verification bias, the missing (\code{NA}) values correspond to non verified subjects.
 #'
 #' @return \code{rhoMLogit} returns a list containing the following components:
 #'  \item{coeff}{a vector of estimated coefficients.}
@@ -28,12 +28,13 @@
 #' @references
 #' To Duc, K., Chiogna, M. and Adimari, G. (2016)
 #' Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.
-#' \emph{Electronic Journal of Statistics}. In press.
+#' \emph{Electronic Journal of Statistics}, \bold{10}, 3063-3113.
 #'
 #' @examples
 #' data(EOC)
 #' Dna <- preDATA(EOC$D, EOC$CA125)
-#' out <- rhoMLogit(Dna$D ~ CA125 + CA153 + Age, data = EOC, test = TRUE,
+#' Dfact.na <- Dna$D
+#' out <- rhoMLogit(Dfact.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE,
 #'                  trace = TRUE)
 #'
 #' @import nnet
@@ -47,20 +48,19 @@ rhoMLogit <- function(formula, data, test = FALSE, maxit = 500, trace = FALSE){
   X.design <- model.matrix(formula, md)
   dise2 <- model.response(md)
   dise2 <- relevel(as.factor(dise2), ref = "3")
-  name.coef <- names(md)[-1]
-  formula.new <- as.formula(paste("dise2 ~", paste(name.coef, collapse = " + ")))
+  formula.new <- update.formula(formula, dise2 ~ .)
   data.temp <- data
   data.temp$dise2 <- dise2
   tem1.out <- multinom(formula.new, data = data.temp, na.action = na.omit,
                        maxit = maxit, trace = trace, Hess = TRUE)
   if(trace){
     cat("Fitting the disease model by using multinomial logistic model via nnet package.\n")
-    cat("FORMULAR:", deparse(formula), "\n")
+    cat("FORMULAR:", deparse(update.formula(formula, Disease  ~ .)), "\n")
     cat("\n")
   }
   res.coef <- t(coef(tem1.out))
   colnames(res.coef) <- c("1", "2")
-  res.pr <- predict(tem1.out, newdata = X.design, type = "probs")
+  res.pr <- predict(tem1.out, newdata = data.temp, type = "probs")
   res.pr <- res.pr[, c(2, 3, 1)]
   colnames(res.pr) <- c("1", "2", "3")
   Hess <- tem1.out$Hessian
@@ -73,6 +73,8 @@ rhoMLogit <- function(formula, data, test = FALSE, maxit = 500, trace = FALSE){
     print(p, 4L)
     cat("====================================================================\n")
   }
-  return(list(coeff = res.coef, values = res.pr, Hess = Hess,
-              D = model.response(md), X = X.design, formula = formula))
+  fit <- list(coeff = res.coef, values = res.pr, Hess = Hess,
+              D = model.response(md), X = X.design, formula = formula)
+  class(fit) <- "prob_dise"
+  invisible(fit)
 }

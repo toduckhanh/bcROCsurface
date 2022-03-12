@@ -6,51 +6,62 @@
 ##
 #' @title Asymptotic variance estimation for VUS
 #'
-#' @description \code{asyVarVUS} computes the asymptotic variance of full data (FULL) and bias-corrected estimates (i.e. full imputation, mean score imputation, inverse probabilites weighted, semiparametric efficient and K nearest neighbor) of VUS.
+#' @description \code{asyVarVUS} computes the asymptotic variance of full data (FULL) and bias-corrected estimators (i.e. full imputation, mean score imputation, inverse probability weighting, semiparametric efficient and K nearest neighbor) of VUS.
 #'
 #' @param obj_vus  a result of a call to \code{\link{vus}}.
 #' @param T  a numeric vector containing the diagnostic test values. \code{NA} values of \code{T} are not accepted.
-#' @param Dvec  a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 indicates, the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
+#' @param Dvec  a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
 #' @param V  a binary vector containing the verification status (1 verified, 0 not verified).
 #' @param rhoEst  a result of a call to \code{\link{rhoMLogit}} of \code{\link{rhoKNN}} to fit the disease model.
 #' @param piEst  a result of a call to \code{\link{psglm}} to fit the verification model.
-#' @param BOOT a logical value. Default = \code{FALSE}. If set to \code{TRUE}, a bootstrap resampling is employed to estimate the asymptotic variance of bias-corrected VUS estimates except K nearest neighbor.
-#' @param nR  the number of bootstrap replicates, which is used for FULL or KNN estimator, or option \code{BOOT = TRUE}. The defaut is 250.
-#' @param parallel  a logical value. If \code{TRUE}, a parallel computing is employed to the bootstrap resampling process.
+#' @param BOOT a logical value. Default = \code{FALSE}. If set to \code{TRUE}, a bootstrap resampling is employed to estimate the asymptotic variance of the bias-corrected VUS estimators.
+#' @param nR  the number of bootstrap replicates, which is used for FULL or KNN estimators, or option \code{BOOT = TRUE}. The defaut is 250.
+#' @param parallel  a logical value. If \code{TRUE}, a parallel computing is employed in the bootstrap resampling process.
 #' @param ncpus  number of processes to be used in parallel computing. Default is half of available cores.
 #'
 #'
 #' @details
-#' For the FULL and K nearest neighbor estimates, a bootstrap resampling process is employed to obtain asymptotic variances.
+#' For the FULL estimator, a bootstrap resampling process or Jackknife approach is used to estimate the asymptotic variance, whereas, a bootstrap resampling process is employed to obtain the asymptotic variance of K nearest neighbor estimator.
 #'
-#' For the full imputation, mean score imputation, inverse probabilites weighted and semiparametric efficient estimates of VUS, the asymptotic variances are computed by using the explicit form. Furthermore, the bootstrap procedure is also considered in case of small sample size.
+#' For the full imputation, mean score imputation, inverse probability weighting and semiparametric efficient estimators of VUS, the asymptotic variances are computed by using the explicit form. Furthermore, a bootstrap procedure is also available, useful in case of small sample sizes.
 #'
 #' @return \code{asyVarVUS} returns a estimated value of the asymptotic variance.
 #'
 #' @references
+#' To Duc, K., Chiogna, M. and Adimari, G. (2018)
+#' Nonparametric estimation of ROC surfaces in presence of verification bias.
+#' \emph{REVSTAT Statistical Journal}. Accepted.
+#'
 #' To Duc, K., Chiogna, M. and Adimari, G. (2016)
 #' Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.
-#' \emph{Electronic Journal of Statistics}. In press.
+#' \emph{Electronic Journal of Statistics}, \bold{10}, 3063-3113.
+#'
+#' Guangming, P., Xiping, W. and Wang, Z. (2013)
+#' Non-parameteric statistical inference for $P(X < Y < Z)$.
+#' \emph{Sankhya A}, \bold{75}, 1, 118-138.
 #'
 #'
 #' @examples
 #' data(EOC)
-#' attach(EOC)
+#'
 #' # Preparing the missing disease status
-#' Dna <- preDATA(D, CA125)
+#' Dna <- preDATA(EOC$D, EOC$CA125)
+#' Dfact.na <- Dna$D
 #' Dvec.na <- Dna$Dvec
 #'
-#' rho.out <- rhoMLogit(Dna$D ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
-#' pi.out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
-#' vus.spe <- vus("spe", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out,
-#'                piEst = pi.out, ci = FALSE)
-#' var.spe <- asyVarVUS(vus.spe, T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out,
-#'                     piEst = pi.out)
+#' rho.out <- rhoMLogit(Dfact.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
+#' vus.fi <- vus("fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
+#'               ci = FALSE)
+#' var.fi <- asyVarVUS(vus.fi, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+#'                    rhoEst = rho.out)
+#'
 #' \dontrun{
-#' var.bst.spe <- asyVarVUS(vus.spe, T = CA125, Dvec = Dvec.na, V = V,
+#' var.bst.spe <- asyVarVUS(vus.spe, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
 #'                          rhoEst = rho.out, piEst = pi.out, BOOT = TRUE,
 #'                          parallel = TRUE)
 #' }
+#'
+#'
 #' @importFrom Rcpp evalCpp
 #' @import parallel
 #' @import boot
@@ -58,8 +69,31 @@
 asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
                       BOOT = FALSE, nR = 250, parallel = FALSE,
                       ncpus = ifelse(parallel, detectCores()/2, NULL)){
+  if(!inherits(obj_vus, "vus")) stop("The argument \"obj_vus\" is not a result of vus()")
+  ## checking the argument T
+  if(missing(T)) stop("argument \"T\" is missing \n")
+  if(!inherits(T, "numeric") | any(is.na(T))) stop("variable \"T\" must be a numeric vector and not include NA values")
+  ## checking Dvec
+  if(missing(Dvec)) stop("argument \"Dvec\" is missing \n")
+  if(!inherits(Dvec, "matrix") | ncol(Dvec) != 3 | !all(is.element(na.omit(Dvec), c(0,1)))) stop("variable \"Dvec\" must be a binary matrix with 3 columns")
+  if(length(T) != nrow(Dvec)) stop(gettextf("arguments imply differing number of observation: %d", length(T)), gettextf(", %d", nrow(Dvec)), domain = NA)
   VUS_obj <- obj_vus$vus.fit
   meth <- tolower(attr(VUS_obj, "name"))
+  if(!is.element(meth, c("full", "fi")) & is.null(V)) stop("argument \"V\" is missing \n")
+  if(is.element(meth, c("fi", "msi", "knn", "spe")) & is.null(rhoEst)) stop("argument \"rhoEst\" is missing \n")
+  if(is.element(meth, c("ipw", "spe")) & is.null(piEst)) stop("argument \"piEst\" is missing \n")
+  ##
+  if(!is.null(rhoEst)){
+    if(!is.element(class(rhoEst),  c("prob_dise", "prob_dise_knn")))
+      stop("\"rhoEst\" not a result of rhoMlogit or rhoKNN \n")
+    if(is.element(class(rhoEst),  c("prob_dise_knn"))){
+      if(is.null(rhoEst$K)) stop("The \"rhoEst\" is a list containing results of rhoKNN with many values of K! \n Please, choose one of them \n")
+    }
+  }
+  if(!is.null(piEst)){
+    if(!is.element(class(piEst),  c("prob_veri")))
+      stop("\"piEst\" not a result of psglm \n")
+  }
   n <- length(T)
   Dvec.temp <- Dvec
   if(any(is.na(Dvec))) Dvec.temp[is.na(Dvec)] <- 99
@@ -80,17 +114,15 @@ asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
         out <- rhoMLogit(formula, data = dat)
         vusC(dat[,1], out$values)
       }
-      name.var <- all.vars(rhoEst$formula)
+      name.var <- as.character(attributes(terms(rhoEst$formula))$variables)[-1]
       data <- data.frame(T, rhoEst$D, rhoEst$X[,name.var[-1]])
-      names(data) <- c("T", name.var)
-      form <- as.formula(paste(paste(name.var[1],"~"), paste(name.var[-1],
-                                                             collapse = " + ")))
+      names(data) <- c("Temp", name.var)
       if(parallel){
-        res.bst <- boot(data, bst.fi, R = nR, formula = form, parallel = "snow",
+        res.bst <- boot(data, bst.fi, R = nR, formula = rhoEst$formula, parallel = "snow",
                         ncpus = ncpus)
       }
-      else res.bst <- boot(data, bst.fi, R = nR, formula = form)
-      ans_var <- as.numeric(var(res.bst$t))
+      else res.bst <- boot(data, bst.fi, R = nR, formula = rhoEst$formula)
+      ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
     }
   }
   else if(meth == "msi"){
@@ -113,17 +145,16 @@ asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
                             (1 - dat[, "V"])*out$values)
         vusC(dat[,1], Dmsi)
       }
-      name.var <- all.vars(rhoEst$formula)
+      name.var <- as.character(attributes(terms(rhoEst$formula))$variables)[-1]
       data <- data.frame(T, rhoEst$D, rhoEst$X[,name.var[-1]], V, Dvec.temp)
-      names(data) <- c("T", name.var, "V", "D1", "D2", "D3")
-      form <- as.formula(paste(paste(name.var[1],"~"), paste(name.var[-1],
-                                                             collapse = " + ")))
+      names(data) <- c("Temp", name.var, "V", "D1", "D2", "D3")
+      form <-
       if(parallel){
-        res.bst <- boot(data, bst.msi, R = nR, formula = form, parallel = "snow",
-                        ncpus = ncpus)
+        res.bst <- boot(data, bst.msi, R = nR, formula = rhoEst$formula,
+                        parallel = "snow", ncpus = ncpus)
       }
-      else res.bst <- boot(data, bst.msi, R = nR, formula = form)
-      ans_var <- as.numeric(var(res.bst$t))
+      else res.bst <- boot(data, bst.msi, R = nR, formula = rhoEst$formula)
+      ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
     }
   }
   else if(meth == "ipw"){
@@ -146,17 +177,16 @@ asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
         Dipw <- as.matrix(dat[, c("D1", "D2", "D3")]*dat[, 2]/out$values)
         vusC(dat[,1], Dipw)
       }
-      name.var <- all.vars(piEst$formula)
+      name.var <- as.character(attributes(terms(piEst$formula))$variables)[-1]
       data <- data.frame(T, V, piEst$X[,name.var[-1]], Dvec.temp)
-      names(data) <- c("T", name.var, "D1", "D2", "D3")
-      form <- as.formula(paste(paste(name.var[1],"~"), paste(name.var[-1],
-                                                             collapse = " + ")))
+      names(data) <- c("Temp", name.var, "D1", "D2", "D3")
+      form <-
       if(parallel){
-        res.bst <- boot(data, bst.ipw, R = nR, formula = form, parallel = "snow",
-                        ncpus = ncpus)
+        res.bst <- boot(data, bst.ipw, R = nR, formula = piEst$formula,
+                        parallel = "snow", ncpus = ncpus)
       }
       else res.bst <- boot(data, bst.ipw, R = nR, formula = form)
-      ans_var <- as.numeric(var(res.bst$t))
+      ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
     }
   }
   else if(meth == "spe"){
@@ -192,31 +222,29 @@ asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
                             (dat[, "V"]/out.pi$values - 1)*out.rho$values)
         vusC(dat[,1], Dspe)
       }
-      name.var.rho <- all.vars(rhoEst$formula)
-      name.var.pi <- all.vars(piEst$formula)
+      name.var.rho <- as.character(attributes(terms(rhoEst$formula))$variables)[-1]
+      name.var.pi <- as.character(attributes(terms(piEst$formula))$variables)[-1]
       data.rho <- data.frame(rhoEst$X[,name.var.rho[-1]])
       data.pi <- data.frame(piEst$X[,name.var.pi[-1]])
-      data <- data.frame(T, V, rhoEst$D, intersect(data.rho, data.pi), Dvec.temp)
-      names(data) <- c("T", name.var.pi[1], name.var.rho[1],
-                       intersect(name.var.rho, name.var.pi), "D1", "D2", "D3")
-      form.rho <- as.formula(paste(paste(name.var.rho[1],"~"),
-                                   paste(name.var.rho[-1], collapse = " + ")))
-      form.pi <- as.formula(paste(paste(name.var.pi[1],"~"),
-                                   paste(name.var.pi[-1], collapse = " + ")))
+      data <- data.frame(T, V, rhoEst$D, union(data.rho, data.pi), Dvec.temp)
+      names(data) <- c("Temp", name.var.pi[1], name.var.rho[1],
+                       union(name.var.rho[-1], name.var.pi[-1]), "D1", "D2", "D3")
       if(parallel){
-        res.bst <- boot(data, bst.spe, R = nR, formula.rho = form.rho,
-                        formula.pi = form.pi, parallel = "snow", ncpus = ncpus)
+        res.bst <- boot(data, bst.spe, R = nR, formula.rho = rhoEst$formula,
+                        formula.pi = piEst$formula, parallel = "snow", ncpus = ncpus)
       }
-      else res.bst <- boot(data, bst.spe, R = nR, formula.rho = form.rho,
-                           formula.pi = form.pi)
-      ans_var <- as.numeric(var(res.bst$t))
+      else res.bst <- boot(data, bst.spe, R = nR, formula.rho = rhoEst$formula,
+                           formula.pi = piEst$formula)
+      ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
     }
   }
   else if(meth == "knn"){
     bst.knn <- function(dt, inds, k, type){
       dat <- dt[inds,]
       XX <- as.matrix(dat[, -c(1:5)])
-      rho.knn <- rhoKNN(XX, dat[, c(2:4)], dat[, 5], k = k, type = type)
+      dise.bt <- as.matrix(dat[, c(2:4)])
+      dise.bt[dise.bt == 99] <- NA
+      rho.knn <- rhoKNN(XX, dise.bt, dat[, 5], K = k, type = type)
       Dknn <- as.matrix(dat[, c(2:4)]*dat[, 5] + (1 - dat[, 5])*rho.knn$values)
       vusC(dat[,1], Dknn)
     }
@@ -226,21 +254,37 @@ asyVarVUS <- function(obj_vus, T, Dvec, V = NULL, rhoEst = NULL, piEst = NULL,
                       parallel = "snow", ncpus = ncpus)
     }
     else res.bst <- boot(data, bst.knn, R = nR, k = rhoEst$K, type = rhoEst$type)
-    ans_var <- as.numeric(var(res.bst$t))
+    ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
   }
   else{
-    bst.full <- function(dt, inds){
-      dat <- dt[inds,]
-      vusC(dat[,1], as.matrix(dat[,c(2:4)]))
+    if(!BOOT){
+      T1 <- T[Dvec[, 1] == 1]
+      T2 <- T[Dvec[, 2] == 1]
+      T3 <- T[Dvec[, 3] == 1]
+      n1 <- length(T1)
+      n2 <- length(T2)
+      n3 <- length(T3)
+      vus_est_mult <- VUS_obj * n1 * n2 * n3
+      var_term <- vusC_full_core(T1, T2, T3)
+      var_term_i <- sapply(1:n1, function(x) sum(var_term$ind1[-x]))
+      var_term_j <- sapply(1:n2, function(x) sum(var_term$ind2[-x]))
+      var_term_k <- sapply(1:n3, function(x) sum(var_term$ind3[-x]))
+      ans_var <- var((vus_est_mult - var_term_i)/(n2*n3))/n1 +
+        var((vus_est_mult - var_term_j)/(n1*n3))/n2 +
+        var((vus_est_mult - var_term_k)/(n1*n2))/n3
     }
-    data <- data.frame(T, Dvec.temp)
-    if(parallel){
-      res.bst <- boot(data, bst.full, R = nR, parallel = "snow", ncpus = ncpus)
+    else{
+      bst.full <- function(dt, inds){
+        dat <- dt[inds,]
+        vusC(dat[,1], as.matrix(dat[,c(2:4)]))
+      }
+      data <- data.frame(T, Dvec.temp)
+      if(parallel){
+        res.bst <- boot(data, bst.full, R = nR, parallel = "snow", ncpus = ncpus)
+      }
+      else res.bst <- boot(data, bst.full, R = nR)
+      ans_var <- as.numeric(var(res.bst$t, na.rm = TRUE))
     }
-    else res.bst <- boot(data, bst.full, R = nR)
-    ans_var <- as.numeric(var(res.bst$t))
   }
   return(ans_var)
 }
-
-

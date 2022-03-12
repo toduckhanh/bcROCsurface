@@ -51,7 +51,7 @@ psglm <- function(formula, data, model = "logit", test = FALSE, trace = TRUE, ..
     }
     if(trace){
       cat("Fitting the verification model by using", deparse(model),"regression.\n")
-      cat("FORMULAR:", deparse(formula), "\n")
+      cat("FORMULAR:", deparse(update.formula(formula, Verification ~ .)), "\n")
       cat("\n")
     }
     res.coef <- coef(md.temp)
@@ -64,11 +64,13 @@ psglm <- function(formula, data, model = "logit", test = FALSE, trace = TRUE, ..
       print(summary(md.temp)$coefficients[, c(3, 4)])
       cat("==================================================================\n")
     }
-    return(list(coeff = res.coef, values = res.est, Hess = res.hess, X = X,
-                formula = formula, model = model))
+    fit <- list(coeff = res.coef, values = res.est, Hess = res.hess, X = X,
+                formula = formula, model = model)
+    class(fit) <- "prob_veri"
   }
   else{
     stop(gettextf("model \"%s\" is not available for the suggestion; available models are %s", model.temp, paste(sQuote(sugg.model), collapse = ", ")),
          domain = NA)
   }
+  invisible(fit)
 }

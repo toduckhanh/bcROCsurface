@@ -30,21 +30,21 @@ rhoMLogit(formula, data, test = FALSE, maxit = 500, trace = FALSE)
 \code{rhoMLogit} is used to fit multinomial logistic models to the disease process in the verified subjects.
 }
 \details{
-In the formula, the response must be a factor with three levels, say 1, 2, 3. These levels correspond to three classes of disease status, e.g., non-dieseased, intermediate, diseased. The last class (class 3) is considered as the reference level in multinomal logistic model. In presence of verification bias, the missing (\code{NA}) values correspond to non verified subjects.
+In the formula, the response must be a result of \code{\link{preDATA}}, a factor with three levels, say 1, 2, 3. These levels correspond to three classes of disease status, e.g., non-dieseased, intermediate, diseased. The last class (class 3) is considered as the reference level in multinomal logistic model. In presence of verification bias, the missing (\code{NA}) values correspond to non verified subjects.
 }
 \examples{
 data(EOC)
 Dna <- preDATA(EOC$D, EOC$CA125)
-out <- rhoMLogit(Dna$D ~ CA125 + CA153 + Age, data = EOC, test = TRUE,
+Dfact.na <- Dna$D
+out <- rhoMLogit(Dfact.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE,
                  trace = TRUE)
 
 }
 \references{
 To Duc, K., Chiogna, M. and Adimari, G. (2016)
 Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.
-\emph{Electronic Journal of Statistics}. In press.
+\emph{Electronic Journal of Statistics}, \bold{10}, 3063-3113.
 }
 \seealso{
 \code{\link[nnet]{multinom}}, \code{\link[nnet]{nnet}}
 }
-
