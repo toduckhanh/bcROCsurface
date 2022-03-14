@@ -101,6 +101,7 @@ rho.out <- rhoMLogit(Dfact.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
 
 vus("fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out)
 
+\dontrun{
 # MSI estimator
 vus("msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out)
 
