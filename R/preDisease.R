@@ -14,26 +14,26 @@
 #' @param T  a numeric vector containing the diagnostic test values. \code{NA} values are not admitted.
 #' @param plot  if TRUE (the default) then a boxplot of diagnostic test T based on three ordered groups is produced.
 #'
-#' @details The ROC surface and VUS are only performed when the ordering of interest is monotone increasing. That is, for diagnostic test \eqn{T} and three classes 1, 2 and 3 of disease status, the monotone increasing ordering of interest is \eqn{T_1 < T_2 < T_3}. Here, \eqn{T_1}, \eqn{T_2} and \eqn{T_3} are the measurements of diagnostic test \eqn{T} corresponding to class 1, 2 and 3, respectively. Note that, if an umbrella or tree ordering is of interest, then the results of ROC surface analysis is not reliable.
+#' @details The ROC surface analysis implemented in the package is coherent when the ordering of the diagnostic classes is monotone increasing. That is, for a diagnostic test \eqn{T} and three disease classes, 1, 2 and 3, the monotone increasing ordering of interest is \eqn{T_1 < T_2 < T_3}. Here, \eqn{T_1}, \eqn{T_2} and \eqn{T_3} are the measurements of diagnostic test \eqn{T} corresponding to class 1, 2 and 3, respectively. Note that, if an umbrella or tree ordering is of interest, then the results of ROC surface analysis is not reliable.
 #'
-#' In order to find out the ordering of the disease classes, we employ the explorator analysis based on the primary ordering of the disease status (e.g. non-diseased, intermediate, diseased). After that, we re-describe the ordering such that it corresponds to the ordering for diagnostic test values.
+#' In order to find out the monotone ordering, we compute the medians of \eqn{T_1}, \eqn{T_2} and \eqn{T_3}, and then sort the three medians in ascending order. After that, the three disease classes are reordered corresponding to the order of medians.
 #'
-#' To pass into the functions of package \code{bcROCsurface}, the vector of disease status must be presented as a n * 3 binary matrix with the three columns, corresponding to three classes of the disease status.
+#' To be used in the functions of package \code{bcROCsurface}, the vector of disease status must be presented as a n * 3 binary matrix with the three columns, corresponding to the three classes.
 #'
-#' For any real data, the application of this function is the first step in the use of ROC analysis. Note that, if the user be sure that the disease classes are monotone increasing ordering and the matrix format is available, then the use of \code{preDATA} can be ignorble.
+#' With real data, the application of this function is the first step in the use of ROC analysis. Note that, if the user is sure that the disease classes follow a monotone increasing ordering and the disease matrix is available, then the use of \code{preDATA} is not necessary.
 #'
-#' @return This function returns a list containting a vector \code{D} of ordered disease status, a binary matrix \code{Dvec} of the disease status and a vector \code{order} containing the sequence of class labels.
+#' @return This function returns a list containting a factor \code{D} of ordered disease status and a binary matrix \code{Dvec} of the disease status and a vector \code{order} containing the sequence of class labels.
 #'
 #' @examples
 #' data(EOC)
-#' attach(EOC)
-#' Dfull <- preDATA(D.full, CA125)
+#' Dfull <- preDATA(EOC$D.full, EOC$CA125)
 #'
 #'
 #' @export
 preDATA <- function(D, T, plot = TRUE){
   if(!is.factor(D)) D <- as.factor(D)
   if (length(levels(D)) != 3) stop("\"D\" do not have three classes!")
+  if(length(T) != length(D)) stop(gettextf("arguments imply differing number of observation: %d", length(T)), gettextf(", %d", length(D)), domain = NA)
   classes <- sort(as.character(unique(na.omit(D))))
   D.temp <- as.numeric(factor(D, levels = classes, labels = c(1, 2, 3)))
   if(any(is.na(D.temp))) cat("There are missing disease status.\n")
@@ -97,8 +97,12 @@ preDATA <- function(D, T, plot = TRUE){
   colnames(Dvec) <- c("D1", "D2", "D3")
   if(plot){
     boxplot(T ~ d, names = classes[id.median], na.action = na.omit,
-            col = c("gray", "blue", "red"), ylab = "Diagnostic Test",
+            col = c("gray", "cornflowerblue", "red"), ylab = "Diagnostic Test",
             xlab = "Three Ordered Groups")
   }
-  return(list(D = d, Dvec = Dvec, order = id.median))
+  res <- list(D = as.factor(d), Dvec = Dvec, order = id.median)
+  invisible(res)
 }
+
+
+

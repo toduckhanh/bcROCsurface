@@ -43,4 +43,3 @@ out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
 \seealso{
 \code{\link{glm}}
 }
-

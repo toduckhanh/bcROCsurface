@@ -4,15 +4,25 @@
 \alias{asyCovTCF}
 \title{Asymptotic variance-covariance estimation for True Class Fractions (TCFs) at the cut point \eqn{(c_1, c_2)}}
 \usage{
-asyCovTCF(obj_tcf, T, Dvec, V, rhoEst, piEst, cp, BOOT = FALSE, nR = 2500,
-  parallel = FALSE, ncpus = ifelse(parallel, detectCores()/2, NULL))
+asyCovTCF(
+  obj_tcf,
+  T,
+  Dvec,
+  V = NULL,
+  rhoEst = NULL,
+  piEst = NULL,
+  BOOT = FALSE,
+  nR = 250,
+  parallel = FALSE,
+  ncpus = ifelse(parallel, detectCores()/2, NULL)
+)
 }
 \arguments{
 \item{obj_tcf}{a result of a call to \code{\link{ROCs.tcf}}.}
 
 \item{T}{a numeric vector containing the diagnostic test values. \code{NA} values of \code{T} are not accepted.}
 
-\item{Dvec}{a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 indicates, the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.}
+\item{Dvec}{a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.}
 
 \item{V}{a binary vector containing the verification status (1 verified, 0 not verified).}
 
@@ -20,85 +30,84 @@ asyCovTCF(obj_tcf, T, Dvec, V, rhoEst, piEst, cp, BOOT = FALSE, nR = 2500,
 
 \item{piEst}{a result of a call to \code{\link{psglm}} to fit the verification model.}
 
-\item{cp}{cut point \eqn{(c_1, c_2)} is used for estimating TCFs.}
-
 \item{BOOT}{a logical value. Default = \code{FALSE}. If set to \code{TRUE}, a bootstrap resampling is employed to estimate the asymptotic variance-covariance matrix of bias-corrected TCFs.}
 
-\item{nR}{the number of bootstrap replicates, which used for \code{BOOT = TRUE} or FULL estimate. Usually this will be a single positive integer. Default 2500.}
+\item{nR}{the number of bootstrap replicates, used when \code{BOOT = TRUE} or for FULL estimator. Usually this will be a single positive integer. Default 250.}
 
-\item{parallel}{a logical value. If \code{TRUE}, a parallel computing is employed to the bootstrap resampling process.}
+\item{parallel}{a logical value. If \code{TRUE}, a parallel computing is employed in the bootstrap resampling process.}
 
 \item{ncpus}{number of processes to be used in parallel computing. Default is half of available cores.}
 }
 \value{
-This function returns an estimated asymptotic variance-covariance matrix of FULL estimate and bias-corrected estimates of TCFs at a fixed cut point.
+This function returns an estimated asymptotic variance-covariance matrix for FULL estimator and bias-corrected estimators of TCFs at a fixed cut point.
 }
 \description{
-\code{asyCovTCF} computes the asymptotic variance-covariance matrix of full data (FULL) and bias-corrected estimates (i.e. full imputation, mean score imputation, inverse probabilites weighted, semiparametric efficient and K nearest neighbor) of TCFs.
+\code{asyCovTCF} computes the asymptotic variance-covariance matrix of full data (FULL) and bias-corrected estimators (i.e. full imputation, mean score imputation, inverse probability weighting, semiparametric efficient and K nearest neighbor) of TCFs.
 }
 \details{
-For bias-corrected estimates of TCFs, the asymptotic variance-covariance matrix at a fixed cut point is estimated by using the Delta method. The function \code{asyCovTCF} implements the explicit forms, which presented in To Duc et al. (2016a, 2016b). In addition, the bootstrap procedure is also implemented.
+For bias-corrected estimators of TCFs, the asymptotic variance-covariance matrix at a fixed cut point is estimated by using the Delta method. The function \code{asyCovTCF} implements the explicit forms presented in To Duc et al. (2016a, 2016b). In addition, the bootstrap procedure is also available.
 
-For FULL estimate, the asymptotic variance-covariance matrix is computed by bootstrap procedure.
+For FULL estimator, the asymptotic variance-covariance matrix is computed via bootstrap only.
 }
 \examples{
 data(EOC)
-attach(EOC)
 
 # FULL data estimator
-Dfull <- preDATA(D.full, CA125)
+Dfull <- preDATA(EOC$D.full, EOC$CA125)
 Dvec.full <- Dfull$Dvec
 
-full.tcf <- ROCs.tcf("full", T = CA125, Dvec = Dvec.full, cps = c(2, 4))
-full.var <- asyCovTCF(full.tcf, T = CA125, Dvec = Dvec.full, cp = c(2, 4))
+full.tcf <- ROCs.tcf("full", T = EOC$CA125, Dvec = Dvec.full, cps = c(2, 4))
+full.var <- asyCovTCF(full.tcf, T = EOC$CA125, Dvec = Dvec.full)
 
 # Preparing the missing disease status
-Dna <- preDATA(D, CA125)
+Dna <- preDATA(EOC$D, EOC$CA125)
+Dfact.na <- Dna$D
 Dvec.na <- Dna$Dvec
 
-rho.out <- rhoMLogit(Dna$D ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
+rho.out <- rhoMLogit(Dfact.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
 
 ## FI estimator
-fi.tcf <- ROCs.tcf("fi", T = CA125, Dvec = Dvec.na, V = V,
+fi.tcf <- ROCs.tcf("fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
                    rhoEst = rho.out, cps = c(2,4))
-fi.var <- asyCovTCF(fi.tcf, T = CA125, Dvec = Dvec.na, V = V,
-                    rhoEst = rho.out, cp = c(2,4))
+fi.var <- asyCovTCF(fi.tcf, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+                    rhoEst = rho.out)
 
 ## MSI estimator
-msi.tcf <- ROCs.tcf("msi", T = CA125, Dvec = Dvec.na, V = V,
+msi.tcf <- ROCs.tcf("msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
                     rhoEst = rho.out, cps = c(2,4))
-msi.var <- asyCovTCF(msi.tcf, T = CA125, Dvec = Dvec.na, V = V,
-                         rhoEst = rho.out, cp = c(2,4))
+msi.var <- asyCovTCF(msi.tcf, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+                     rhoEst = rho.out)
 
 ## IPW estimator
 pi.out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
 
-ipw.tcf <- ROCs.tcf("ipw", T = CA125, Dvec = Dvec.na, V = V,
+ipw.tcf <- ROCs.tcf("ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
                     piEst = pi.out, cps = c(2,4))
-ipw.var <- asyCovTCF(ipw.tcf, T = CA125, Dvec = Dvec.na, V = V,
-                          piEst = pi.out, cp = c(2,4))
+ipw.var <- asyCovTCF(ipw.tcf, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+                     piEst = pi.out)
 
 ## SPE estimator
-spe.tcf <- ROCs.tcf("spe", T = CA125, Dvec = Dvec.na, V = V,
+spe.tcf <- ROCs.tcf("spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
                    rhoEst = rho.out, piEst = pi.out, cps = c(2,4))
-spe.var <- asyCovTCF(spe.tcf, T = CA125, Dvec = Dvec.na, V = V,
-                     rhoEst = rho.out, piEst = pi.out, cp = c(2,4))
+spe.var <- asyCovTCF(spe.tcf, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+                     rhoEst = rho.out, piEst = pi.out)
 
 ## KNN estimators
-XX <- cbind(CA125, CA153, Age)
-rho.1nn <- rhoKNN(XX, Dvec.na, V, k = 1, type = "mahala")
-knn.tcf <- ROCs.tcf("knn", T = CA125, Dvec = Dvec.na, V = V,
+XX <- cbind(EOC$CA125, EOC$CA153, EOC$Age)
+rho.1nn <- rhoKNN(X = XX, Dvec = Dvec.na, V = EOC$V, K = 1, type = "mahala")
+knn.tcf <- ROCs.tcf("knn", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
                    rhoEst = rho.1nn, cps = c(2,4))
-knn.var <- asyCovTCF(knn.tcf, T = CA125, Dvec = Dvec.na, V = V,
-                        rhoEst = rho.1nn, cp = c(2,4))
+knn.var <- asyCovTCF(knn.tcf, T = EOC$CA125, Dvec = Dvec.na, V = EOC$V,
+                     rhoEst = rho.1nn)
+
+
 }
 \references{
 To Duc, K., Chiogna, M. and Adimari, G. (2016a)
 Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.
-\emph{Electronic Journal of Statistics}. In press.
+\emph{Electronic Journal of Statistics}, \bold{10}, 3063-3113.
 
-To Duc, K., Chiogna, M. and Adimari, G. (2016b)
-Nonparametric Estimation of ROC Surfaces Under Verification Bias.
-\url{https://arxiv.org/abs/1604.04656v1}. Submitted.
+To Duc, K., Chiogna, M. and Adimari, G. (2018)
+Nonparametric estimation of ROC surfaces in presence of verification bias.
+\emph{REVSTAT Statistical Journal}. Accepted.
 }
-

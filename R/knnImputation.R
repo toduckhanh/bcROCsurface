@@ -1,21 +1,21 @@
 ####==========================================================================####
-## The R code for fitting the disease models with k nearest-neighbor regression.##
+## The R code for fitting the disease models with K nearest-neighbor regression.##
 ##                                                                              ##
 ####==========================================================================####
 #' @title K nearest-neighbor (KNN) regression
 #'
-#' @description  \code{rhoKNN} use the KNN approach to estimate the probabilities of the disease status in case of three categories.
+#' @description  \code{rhoKNN} uses the KNN approach to estimate the probabilities of the disease status in case of three categories.
 #'
 #' @param X  a numeric design matrix.
-#' @param Dvec   a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 indicates, the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
+#' @param Dvec   a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
 #' @param V  a binary vector containing the verification status (1 verified, 0 not verified).
-#' @param k  an integer value, which indicates the number of nearest neighbor. It should be less than the observations of verification sample.
+#' @param K  an integer value/vector, which indicates the number of nearest neighbors. It should be less than the number of the verification subjects.
 #' @param type  a distance measure.
 #' @param trace switch for tracing estimation process. Default \code{FALSE}.
 #'
-#' @details \code{type} should be selected as one of \code{"eucli"}, \code{"manha"}, \code{"canber"}, \code{"lagran"}, \code{"mahala"} corresponding to Euclidean, Manhattan, Canberra, Lagrange and Mahalanobis distance. In practice, the selection of a suitable distance is typically dictated by features of the data and possible subjective evaluations, for example, if the covariates are heterogeneous with respect to their variances (which is particularly true when the variables are measured on heterogeneous scales), the choice of the Mahalanobis distance may be a good choice.
+#' @details \code{type} should be selected as one of \code{"eucli"}, \code{"manha"}, \code{"canber"}, \code{"lagran"}, \code{"mahala"} corresponding to Euclidean, Manhattan, Canberra, Lagrange and Mahalanobis distance. In practice, the selection of a suitable distance is typically dictated by features of the data and possible subjective evaluations. For example, if the covariates are heterogeneous with respect to their variances (which is particularly true when the variables are measured on heterogeneous scales), the choice of the Mahalanobis distance may be a good choice.
 #'
-#' For the number of nearest neighbor, a small value of \code{k}, within the range 1-3, may be a good choice. In general, the choice of \code{k} may depend on the dimension of the feature space, and propose to use cross--validation to find \code{k} in case of high--dimensional covariate. See \code{\link{CVknn}}.
+#' For the number of nearest neighbors, a small value of \code{K}, within the range 1-3, may be a good choice. In general, the choice of \code{K} may depend on the dimension of the feature space, and propose to use cross--validation to find \code{K} in case of high--dimensional covariate. See \code{\link{CVknn}}.
 #'
 #'
 #' @return \code{rhoKNN} returns a list containing the following components:
@@ -33,27 +33,34 @@
 #' Dna <- preDATA(EOC$D, EOC$CA125)
 #' Dvec.na <- Dna$Dvec
 #'
-#' ## Euclidean distance, k = 1
-#' out.ecul.1nn <- rhoKNN(XX, Dvec.na, EOC$V, k = 1, type = "eucli")
+#' ## Euclidean distance, K = 1
+#' out.ecul.1nn <- rhoKNN(XX, Dvec.na, EOC$V, K = 1, type = "eucli")
 #'
-#' ## Manhattan distance, k = 1
-#' out.manh.1nn <- rhoKNN(XX, Dvec.na, EOC$V, k = 1, type = "manha")
+#' ## Manhattan distance, K = 1
+#' out.manh.1nn <- rhoKNN(XX, Dvec.na, EOC$V, K = 1, type = "manha")
 #'
-#' ## Canberra distance, k = 3
-#' out.canb.1nn <- rhoKNN(XX, Dvec.na, EOC$V, k = 3, type = "canber")
+#' ## Canberra distance, K = 3
+#' out.canb.1nn <- rhoKNN(XX, Dvec.na, EOC$V, K = 3, type = "canber")
 #'
-#' ## Lagrange distance, k = 3
-#' out.lagr.1nn <- rhoKNN(XX, Dvec.na, EOC$V, k = 3, type = "lagran")
+#' ## Lagrange distance, K = 3
+#' out.lagr.1nn <- rhoKNN(XX, Dvec.na, EOC$V, K = 3, type = "lagran")
 #'
-#' ## Mahalanobis distance, k = 3
-#' out.maha.3nn <- rhoKNN(XX, Dvec.na, EOC$V, k = 3, type = "mahala")
+#' ## Mahalanobis distance, K = c(1,3)
+#' out.maha.13nn <- rhoKNN(XX, Dvec.na, EOC$V, K = c(1,3), type = "mahala")
 #'
 #' @export
-rhoKNN <- function(X, Dvec, V, k, type = c("eucli", "manha", "canber", "lagran",
+rhoKNN <- function(X, Dvec, V, K, type = c("eucli", "manha", "canber", "lagran",
                                             "mahala"), trace = FALSE){
+  if(!inherits(X, "matrix")) stop("\"XX\" not a matrix \n")
+  if(!inherits(Dvec, "matrix") | ncol(Dvec) != 3 | !all(is.element(na.omit(Dvec), c(0,1)))) stop("variable \"Dvec\" must be a binary matrix with 3 columns")
+  if(nrow(X) != nrow(Dvec)) stop(gettextf("arguments imply differing number of observation: %d", nrow(X)), gettextf(", %d", nrow(Dvec)), domain = NA)
+  if(missing(V)) stop("object \"V\" is missing \n")
+  if(missing(K)) stop("object \"K\" is missing \n")
+  nk <- length(K)
+  if(nk == 0) stop("what is the value of K!? \n")
+  is.wholenumber <- function(x) all(x == round(x)) & all(x > 0)
+  if(!is.wholenumber(K)) stop("\"K\" not a positive integer number or vector \n")
   n <- nrow(X)
-  nk <- length(k)
-  if(nk == 0) stop("what is the value of k!? \n")
   S.inv <- solve(cov(X))
   type <- match.arg(type)
   dista <- switch(type,
@@ -81,8 +88,13 @@ rhoKNN <- function(X, Dvec, V, k, type = c("eucli", "manha", "canber", "lagran",
   )
   if(trace){
     cat("Fitting the disease model by using K nearest-neighbor imputation.\n")
-    cat("K:", k, "\n")
-    cat("Distance measure:", deparse(type), "\n")
+    cat("K:", K, "\n")
+    cat("Distance measure:", switch(type,
+                                    eucli = "Euclidean",
+                                    manha = "Manhattan",
+                                    canber = "Canberra",
+                                    lagran = "Lagrange",
+                                    mahala = "Mahalanobis"), "\n")
     cat("\n")
   }
   Dvec.veri <- Dvec[V == 1, ]
@@ -95,15 +107,16 @@ rhoKNN <- function(X, Dvec, V, k, type = c("eucli", "manha", "canber", "lagran",
       dist.tem <- dista(X[i,], X.veri, S.inv)
       id.tem <- order(dist.tem)
       y.temp <- Dvec.veri[id.tem, ]
-      res[i,] <- c(mean(y.temp[1:k,1]), mean(y.temp[1:k,2]), mean(y.temp[1:k,3]))
+      res[i,] <- c(mean(y.temp[1:K,1]), mean(y.temp[1:K,2]), mean(y.temp[1:K,3]))
     }
     for(i in id.veri){
       dist.tem <- dista(X[i,], X.veri, S.inv)
       id.tem <- order(dist.tem)[-1]
       y.temp <- Dvec.veri[id.tem, ]
-      res[i,] <- c(mean(y.temp[1:k,1]), mean(y.temp[1:k,2]), mean(y.temp[1:k,3]))
+      res[i,] <- c(mean(y.temp[1:K,1]), mean(y.temp[1:K,2]), mean(y.temp[1:K,3]))
     }
-    return(list(values = res, X = X, K = k, type = type))
+    fit <- list(values = res, X = X, K = K, type = type)
+    class(fit) <- "prob_dise_knn"
   }
   else{
     res <- list()
@@ -115,8 +128,8 @@ rhoKNN <- function(X, Dvec, V, k, type = c("eucli", "manha", "canber", "lagran",
       id.tem <- order(dist.tem)
       y.temp <- Dvec.veri[id.tem, ]
       for(j in 1:nk){
-        res[[j]][i,] <- c(mean(y.temp[1:k[j],1]), mean(y.temp[1:k[j],2]),
-                          mean(y.temp[1:k[j],3]))
+        res[[j]][i,] <- c(mean(y.temp[1:K[j],1]), mean(y.temp[1:K[j],2]),
+                          mean(y.temp[1:K[j],3]))
       }
     }
     for(i in id.veri){
@@ -124,14 +137,15 @@ rhoKNN <- function(X, Dvec, V, k, type = c("eucli", "manha", "canber", "lagran",
       id.tem <- order(dist.tem)[-1]
       y.temp <- Dvec.veri[id.tem, ]
       for(j in 1:nk){
-        res[[j]][i,] <- c(mean(y.temp[1:k[j],1]), mean(y.temp[1:k[j],2]),
-                          mean(y.temp[1:k[j],3]))
+        res[[j]][i,] <- c(mean(y.temp[1:K[j],1]), mean(y.temp[1:K[j],2]),
+                          mean(y.temp[1:K[j],3]))
       }
     }
-    ans <- list()
+    fit <- list()
     for(j in 1:nk){
-      ans[[j]] <- list(values = res[[j]], X = X, K = k[j], type = type)
+      fit[[j]] <- list(values = res[[j]], X = X, K = K[j], type = type)
+      class(fit[[j]]) <- "prob_dise_knn"
     }
-    return(ans)
   }
+  invisible(fit)
 }

@@ -12,8 +12,8 @@ This package provides tools for correcting verification bias in the evaluation o
 \tabular{ll}{
 Package: \tab bcROCsurface\cr
 Type: \tab Package\cr
-Version: \tab 1.0-1\cr
-Date: \tab 2016-10-07\cr
+Version: \tab 1.0-4\cr
+Date: \tab 2018-11-07\cr
 License: \tab GPL 2 | GPL 3\cr
 Lazy load: \tab yes\cr
 }
@@ -23,23 +23,20 @@ Major functions are \code{\link{ROCs}} and \code{\link{vus}}.
 }
 
 \author{
-Khanh To Duc, with contributions from Monica Chiogna and Gianfranco Adimari
+Duc-Khanh To, with contributions from Monica Chiogna and Gianfranco Adimari
 
-Maintainer: Khanh To Duc <toduc@stat.unipd.it>
+Maintainer: Duc-Khanh To <toduc@stat.unipd.it>
 }
 
 \references{
-To Duc, K., Chiogna, M. and Adimari, G. (2016a)
+To Duc, K., Chiogna, M. and Adimari, G. (2018)
+Nonparametric estimation of ROC surfaces in presence of verification bias.
+\emph{REVSTAT Statistical Journal}. Accepted.
+
+To Duc, K., Chiogna, M. and Adimari, G. (2016)
 Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.
-\emph{Electronic Journal of Statistics}. In press.
-
-To Duc, K., Chiogna, M. and Adimari, G. (2016b)
-Nonparametric Estimation of ROC Surfaces Under Verification Bias.
-\url{https://arxiv.org/abs/1604.04656v1}. Submitted.
+\emph{Electronic Journal of Statistics}, \bold{10}, 3063-3113.
 }
 
-\keyword{
-  package
-  methods
-}
+\keyword{package}
 

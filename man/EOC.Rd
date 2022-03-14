@@ -4,7 +4,8 @@
 \name{EOC}
 \alias{EOC}
 \title{A sub-data from Pre-PLCO Phase II Dataset}
-\format{A data frame with 278 observations on the following 6 variables.
+\format{
+A data frame with 278 observations on the following 6 variables.
 \describe{
   \item{\code{D.full}}{a factor with 3 levels of disease status, 1, 2, 3. The levels correspond to benign disease, early stage (I and II) and late stage (III and IV).}
   \item{\code{V}}{a binary vector containing the verification status. 1 or 0 indicates verified or non verified subject.}
@@ -12,9 +13,10 @@
   \item{\code{CA125}}{a numeric vector of biomarker CA125 (used as diagnostic test).}
   \item{\code{CA153}}{a numeric vector of biomarker CA153 (used as covariate).}
   \item{\code{Age}}{a numeric vector containing the age of patients.}
-}}
+}
+}
 \source{
-SPORE/EDRN/PRE-PLCO Ovarian Phase II Validation Study: \url{https://edrn.nci.nih.gov/protocols/119-spore-edrn-pre-plco-ovarian-phase-ii-validation}.
+SPORE/EDRN/PRE-PLCO Ovarian Phase II Validation Study: \url{https://edrn-labcas.jpl.nasa.gov/labcas-ui/c/index.html?collection_id=Pre-PLCO_Phase_II_Dataset}.
 }
 \usage{
 EOC
@@ -32,4 +34,3 @@ This process leads to 63.4\% patients selected to undergo disease verification.
 The missing disease status D are the copies of the full disease status D.full, but some values corresponding to \eqn{V = 0} are deleted (refered as \code{NA} values).
 }
 \keyword{data}
-

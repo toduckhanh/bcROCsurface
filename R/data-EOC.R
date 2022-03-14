@@ -26,7 +26,7 @@
 #' The missing disease status D are the copies of the full disease status D.full, but some values corresponding to \eqn{V = 0} are deleted (refered as \code{NA} values).
 #'
 #'
-#' @source SPORE/EDRN/PRE-PLCO Ovarian Phase II Validation Study: \url{https://edrn.nci.nih.gov/protocols/119-spore-edrn-pre-plco-ovarian-phase-ii-validation}.
+#' @source SPORE/EDRN/PRE-PLCO Ovarian Phase II Validation Study: \url{https://edrn-labcas.jpl.nasa.gov/labcas-ui/c/index.html?collection_id=Pre-PLCO_Phase_II_Dataset}.
 #'
 #' @keywords data
 #'

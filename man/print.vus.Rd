@@ -22,4 +22,3 @@
 \seealso{
 \code{\link{vus}}
 }
-

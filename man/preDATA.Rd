@@ -14,25 +14,23 @@ preDATA(D, T, plot = TRUE)
 \item{plot}{if TRUE (the default) then a boxplot of diagnostic test T based on three ordered groups is produced.}
 }
 \value{
-This function returns a list containting a vector \code{D} of ordered disease status, a binary matrix \code{Dvec} of the disease status and a vector \code{order} containing the sequence of class labels.
+This function returns a list containting a factor \code{D} of ordered disease status and a binary matrix \code{Dvec} of the disease status and a vector \code{order} containing the sequence of class labels.
 }
 \description{
 \code{preDATA} is used to check and make a suitable monotone increasing ordering of the disease classes. In addition, this function also creates a binary matrix format of disease status to pass into the functions of \code{bcROCsurface} package.
 }
 \details{
-The ROC surface and VUS are only performed when the ordering of interest is monotone increasing. That is, for diagnostic test \eqn{T} and three classes 1, 2 and 3 of disease status, the monotone increasing ordering of interest is \eqn{T_1 < T_2 < T_3}. Here, \eqn{T_1}, \eqn{T_2} and \eqn{T_3} are the measurements of diagnostic test \eqn{T} corresponding to class 1, 2 and 3, respectively. Note that, if an umbrella or tree ordering is of interest, then the results of ROC surface analysis is not reliable.
+The ROC surface analysis implemented in the package is coherent when the ordering of the diagnostic classes is monotone increasing. That is, for a diagnostic test \eqn{T} and three disease classes, 1, 2 and 3, the monotone increasing ordering of interest is \eqn{T_1 < T_2 < T_3}. Here, \eqn{T_1}, \eqn{T_2} and \eqn{T_3} are the measurements of diagnostic test \eqn{T} corresponding to class 1, 2 and 3, respectively. Note that, if an umbrella or tree ordering is of interest, then the results of ROC surface analysis is not reliable.
 
-In order to find out the ordering of the disease classes, we employ the explorator analysis based on the primary ordering of the disease status (e.g. non-diseased, intermediate, diseased). After that, we re-describe the ordering such that it corresponds to the ordering for diagnostic test values.
+In order to find out the monotone ordering, we compute the medians of \eqn{T_1}, \eqn{T_2} and \eqn{T_3}, and then sort the three medians in ascending order. After that, the three disease classes are reordered corresponding to the order of medians.
 
-To pass into the functions of package \code{bcROCsurface}, the vector of disease status must be presented as a n * 3 binary matrix with the three columns, corresponding to three classes of the disease status.
+To be used in the functions of package \code{bcROCsurface}, the vector of disease status must be presented as a n * 3 binary matrix with the three columns, corresponding to the three classes.
 
-For any real data, the application of this function is the first step in the use of ROC analysis. Note that, if the user be sure that the disease classes are monotone increasing ordering and the matrix format is available, then the use of \code{preDATA} can be ignorble.
+With real data, the application of this function is the first step in the use of ROC analysis. Note that, if the user is sure that the disease classes follow a monotone increasing ordering and the disease matrix is available, then the use of \code{preDATA} is not necessary.
 }
 \examples{
 data(EOC)
-attach(EOC)
-Dfull <- preDATA(D.full, CA125)
+Dfull <- preDATA(EOC$D.full, EOC$CA125)
 
 
 }
-
