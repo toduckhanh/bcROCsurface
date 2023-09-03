@@ -12,8 +12,8 @@ This package provides tools for correcting verification bias in the evaluation o
 \tabular{ll}{
 Package: \tab bcROCsurface\cr
 Type: \tab Package\cr
-Version: \tab 1.0-4\cr
-Date: \tab 2018-11-07\cr
+Version: \tab 1.0-5\cr
+Date: \tab 2021-08-26\cr
 License: \tab GPL 2 | GPL 3\cr
 Lazy load: \tab yes\cr
 }
