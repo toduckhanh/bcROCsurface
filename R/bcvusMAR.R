@@ -1,8 +1,8 @@
-####==========================================================================####
-## This file consists of some functions that are related to the computation VUS ##
-## by using the VUS formula.                                                    ##
-## Date: 04/07/2016																															##
-####==========================================================================####
+####========================================================================####
+## This file consists of some functions for computation VUS                   ##
+## by using the VUS formula.                                                  ##
+##                  																													##
+####========================================================================####
 ##
 #' @title Estimation methods for volume under ROC surface (VUS)
 #'
@@ -51,9 +51,9 @@
 #' In addition, the name of method used to estimate VUS also is given as the attribute of \code{vus.fit}.
 #'
 #' @references
-#' To Duc, K., Chiogna, M. and Adimari, G. (2018)
+#' To Duc, K., Chiogna, M. and Adimari, G. (2020)
 #' Nonparametric estimation of ROC surfaces in presence of verification bias.
-#' \emph{REVSTAT Statistical Journal}. Accepted.
+#' \emph{REVSTAT-Statistical Journal}, \bold{18}, 5, 697–720.
 #'
 #' To Duc, K., Chiogna, M. and Adimari, G. (2016)
 #' Bias-corrected methods for estimating the receiver operating characteristic surface of continuous diagnostic tests.

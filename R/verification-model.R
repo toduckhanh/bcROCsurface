@@ -20,7 +20,7 @@
 #'  \item{coeff}{a vector of estimated coefficients.}
 #'  \item{values}{fitted values of the model.}
 #'  \item{Hess}{the Hessian of the measure of fit at the estimated coefficients.}
-#'  \item{X}{a design model matrix.}
+#'  \item{x}{a design model matrix.}
 #'  \item{formula}{the formula supplied.}
 #'  \item{model}{the model object used.}
 #'
@@ -33,43 +33,43 @@
 #'
 #' @import stats
 #' @export
-psglm <- function(formula, data, model = "logit", test = FALSE, trace = TRUE, ...){
-  sugg.model <- c("logit", "probit", "threshold")
-  model.temp <- substitute(mod, list(mod = model))
-  if (!is.character(model.temp)) model.temp <- deparse(model.temp)
-  if(missing(data)) {
+psglm <- function(formula, data, model = "logit", test = FALSE,
+                  trace = TRUE, ...) {
+  sugg_model <- c("logit", "probit", "threshold")
+  model_temp <- substitute(mod, list(mod = model))
+  if (!is.character(model_temp)) model_temp <- deparse(model_temp)
+  if (missing(data)) {
     data <- environment(formula)
     cat("Warning: the data input is missing, the global variables are used!\n")
   }
-  if (model.temp %in% sugg.model){
-    if(model == "threshold"){
-      md.temp <- glm(formula, data = data, family = gaussian, x = TRUE, ...)
-    }
-    else{
-      md.temp <- glm(formula, data = data, family = binomial(link = model),
+  if (model_temp %in% sugg_model) {
+    if (model == "threshold") {
+      md_temp <- glm(formula, data = data, family = gaussian, x = TRUE, ...)
+    } else {
+      md_temp <- glm(formula, data = data, family = binomial(link = model),
                      x = TRUE, ...)
     }
-    if(trace){
-      cat("Fitting the verification model by using", deparse(model),"regression.\n")
+    if (trace) {
+      cat("Fitting the verification model by using", deparse(model),
+          "regression.\n")
       cat("FORMULAR:", deparse(update.formula(formula, Verification ~ .)), "\n")
       cat("\n")
     }
-    res.coef <- coef(md.temp)
-    res.est <- predict(md.temp, type = "response")
-    res.hess <- solve(summary(md.temp)$cov.scaled)
-    X <- md.temp$x
-    if(test) {
-      cat("==================================================================\n")
+    res_coef <- coef(md_temp)
+    res_est <- predict(md_temp, type = "response")
+    res_hess <- solve(summary(md_temp)$cov.scaled)
+    if (test) {
+      cat("=================================================================\n")
       cat("The p-value calculation for the regression coefficients:\n")
-      print(summary(md.temp)$coefficients[, c(3, 4)])
-      cat("==================================================================\n")
+      print(summary(md_temp)$coefficients[, c(3, 4)])
+      cat("=================================================================\n")
     }
-    fit <- list(coeff = res.coef, values = res.est, Hess = res.hess, X = X,
-                formula = formula, model = model)
+    fit <- list(coeff = res_coef, values = res_est, hess = res_hess,
+                X = md_temp$x, formula = formula, model = model)
     class(fit) <- "prob_veri"
-  }
-  else{
-    stop(gettextf("model \"%s\" is not available for the suggestion; available models are %s", model.temp, paste(sQuote(sugg.model), collapse = ", ")),
+  } else {
+    stop(gettextf("model \"%s\" must be one of %s", model_temp,
+                  paste(sQuote(sugg_model), collapse = ", ")),
          domain = NA)
   }
   invisible(fit)
