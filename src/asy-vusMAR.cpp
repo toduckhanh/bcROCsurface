@@ -29,7 +29,7 @@ static inline double indvus(double a, double b, double c) {
   }
 }
 
-//==============================================================================//
+//============================================================================//
 /*
  * estimating function of VUS
  * Note:
@@ -43,11 +43,11 @@ static inline double vusEstFunc(double dd_1i, double dd_2j, double dd_3k,
   return dd_1i*dd_2j*dd_3k*bias_ijk;
 }
 
-//==============================================================================//
+//============================================================================//
 /*
  * derivative of estimating function of VUS
  * Note:
- * deri_dd_1i, deri_dd_2j and deri_dd_3k are the derivatives of estimated verision
+ * deri_dd_1i, deri_dd_2j and deri_dd_3k are the derivatives of estimated version
  * of D_1i, D_2j and D_3k.
  */
 
@@ -60,14 +60,15 @@ static inline vec vusDerEstFunc(double dd_1i, double dd_2j, double dd_3k,
   return tem1*bias_ijk;
 }
 
-//==============================================================================//
+//============================================================================//
 // Asymptotic Variance of VUS Estimators
 
 //[[Rcpp::export]]
-NumericVector asyVarVUS_C(NumericVector tt, NumericMatrix D_hat, double mu_hat,
-                          NumericMatrix EstFunc, NumericMatrix Hess_inv,
-                          NumericMatrix Der_D1_hat, NumericMatrix Der_D2_hat,
-                          NumericMatrix Der_D3_hat){
+NumericVector asy_var_vus_c(NumericVector tt, NumericMatrix D_hat,
+                            double mu_hat, NumericMatrix EstFunc,
+                            NumericMatrix Hess_inv, NumericMatrix Der_D1_hat,
+                            NumericMatrix Der_D2_hat,
+                            NumericMatrix Der_D3_hat){
   vec T = as<vec>(tt);
   mat Dhat = as<mat>(D_hat);
   mat SS = as<mat>(Hess_inv);
@@ -96,8 +97,9 @@ NumericVector asyVarVUS_C(NumericVector tt, NumericMatrix D_hat, double mu_hat,
             tmp1 += vusEstFunc(Dhat_j[0], Dhat_i[1], Dhat_k[2], i_jik);
             tmp1 += vusEstFunc(Dhat_k[0], Dhat_j[1], Dhat_i[2], i_kji);
             tmp2 += tmp1;
-            U1 += vusDerEstFunc(Dhat_i[0], Dhat_j[1], Dhat_k[2], der_Dhat1.col(i),
-                                der_Dhat2.col(j), der_Dhat3.col(k), i_ijk);
+            U1 += vusDerEstFunc(Dhat_i[0], Dhat_j[1], Dhat_k[2],
+                                der_Dhat1.col(i), der_Dhat2.col(j),
+                                der_Dhat3.col(k), i_ijk);
           }
         }
       }

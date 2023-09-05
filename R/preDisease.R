@@ -103,7 +103,7 @@ pre_data <- function(dise, diag_test, plot = TRUE) {
     d1[is.na(d)] <- d2[is.na(d)] <- d3[is.na(d)] <- NA
   }
   dise_vec <- cbind(d1, d2, d3)
-  colnames(disevec) <- c("D1", "D2", "D3")
+  colnames(dise_vec) <- c("D1", "D2", "D3")
   if (plot) {
     boxplot(diag_test ~ d, names = classes[id_median], na.action = na.omit,
             col = c("gray", "cornflowerblue", "red"), ylab = "Diagnostic Test",

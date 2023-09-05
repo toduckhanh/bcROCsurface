@@ -24,7 +24,7 @@ psglm(formula, data, model = "logit", test = FALSE, trace = TRUE, ...)
  \item{coeff}{a vector of estimated coefficients.}
  \item{values}{fitted values of the model.}
  \item{Hess}{the Hessian of the measure of fit at the estimated coefficients.}
- \item{X}{a design model matrix.}
+ \item{x}{a design model matrix.}
  \item{formula}{the formula supplied.}
  \item{model}{the model object used.}
 }

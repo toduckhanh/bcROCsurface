@@ -59,23 +59,24 @@ In data set, `CA125` and `CA153` are two biomarkers, `Age` is the age of the pat
 
 ## Obtaining ROC surface and VUS
 ### FULL Estimator
-The ROC surface and VUS are only applied when an monotone increasing ordering is of interest. Thus, before estimate ROC and also VUS, we have to be sure that the ordering of disease classes is monotone incresasing (with respect to the diagnostic test values). In order to do that, the function `preDATA()` is usefull. 
+The ROC surface and VUS are only applied when an monotone increasing ordering is of interest. Thus, before estimate ROC and also VUS, we have to be sure that the ordering of disease classes is monotone incresasing (with respect to the diagnostic test values). In order to do that, the function `pre_data()` is usefull. 
 
 ```{r preDiseaseFULL, eval=TRUE}
-Dfull <- preDATA(EOC$D.full, EOC$CA125)
+dise_full <- pre_data(EOC$D.full, EOC$CA125)
 ```
 
-On the other hand, we describe the full diease status `D.full` as the binary matrix having three columns, correspondings to three classes of the disease status. Each row corresponds to a trinomial vector, in which, 1 indicates the subject belongs to class j with j = 1,2,3. The function `preDATA()` also done this work.
+On the other hand, we describe the full disease status `dise_full` as the binary matrix having three columns, corresponding to three classes of the disease status. Each row corresponds to a trinomial vector, in which, 1 indicates the subject belongs to class j with j = 1,2,3. The function `pre_data()` also done this work.
 ```{r, eval=FALSE}
-head(Dfull$D)
+head(dise_full$dise)
 ```
 
 ```
 ## [1] 3 1 2 1 1 2
+## Levels: 1 2 3
 ```
 
 ```{r, eval=FALSE}
-head(Dfull$Dvec)
+head(dise_full$dise_vec)
 ```
 
 ```
@@ -97,16 +98,16 @@ knit_hooks$set(webgl = hook_webgl)
 ```
 
 ```{r ROCsFULL, webGL = TRUE}
-Dvec.full <- Dfull$Dvec
-ROCs(method = "full", T = EOC$CA125, Dvec = Dvec.full, ncp = 30, ellipsoid = TRUE,
-     cpst = c(-0.56, 2.31))
+dise_vec_full <- dise_full$dise_vec
+rocs(method = "full", diag_test =  EOC$CA125, dise_vec = dise_vec_full, ncp = 30, 
+     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 
-Here, we consider the full data, so we only need to put the arguments `T` and `Dvec`, and method is `full`.
+Here, we consider the full data, so we only need to put the arguments `diag_test` and `dise_vec`, and method is `full`.
 
 The FULL estimator of VUS is obtained by the following command:
 ```{r vusfull, eval = FALSE}
-vus("full", T = EOC$CA125, Dvec = Dvec.full, ci = TRUE)
+vus_mar("full", diag_test = EOC$CA125, dise_vec = dise_vec_full, ci = TRUE)
 ```
 
 ```
@@ -118,7 +119,7 @@ vus("full", T = EOC$CA125, Dvec = Dvec.full, ci = TRUE)
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus(method = "full", T = CA125, Dvec = Dvec.full, ci = TRUE, 
+## CALL: vus_mar(method = "full", diag_test =  CA125, dise_vec = dise_vec.full, ci = TRUE, 
 ##     parallel = TRUE)
 ##  
 ## Estimate of VUS: 0.5663 
@@ -137,23 +138,24 @@ vus("full", T = EOC$CA125, Dvec = Dvec.full, ci = TRUE)
 ```
 
 ### FI and MSI Estimator
-Now, we compute the FI and MSI estimator with missing data. First, we need to estimate the disease probabilities by using multinomial logistic model. In bcROCsurface package, this work is done by using `rhoMLogit()` function.
+Now, we compute the FI and MSI estimator with missing data. First, we need to estimate the disease probabilities by using multinomial logistic model. In bcROCsurface package, this work is done by using `rho_mlogit()` function.
 
 ```{r disease, eval = TRUE}
-Dna <- preDATA(EOC$D, EOC$CA125)
-Dvec.na <- Dna$Dvec
-D.na <- Dna$D
-rho.out <- rhoMLogit(D.na ~ CA125 + CA153 + Age, data = EOC, test = TRUE, trace = TRUE)
+dise_na <- pre_data(EOC$D, EOC$CA125)
+dise_vec_na <- dise_na$dise_vec
+dise_fact_na <- dise_na$dise
+rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
 ```
 
-The following command provides the ROC surface of FI esimator:
+The following command provides the ROC surface by means of FI esimator:
 ```{r ROCsFI, webgl = TRUE}
-ROCs(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ncp = 30,
-     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+rocs(method = "fi", diag_test =  EOC$CA125, dise_vec = dise_vec_na, veri_stat = EOC$V, 
+     rho_est = rho_out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 And, for VUS:
 ```{r vusfi,  eval=FALSE}
-vus(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ci = TRUE)
+vus_mar(method = "fi", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+        veri_stat = EOC$V, rho_est = rho_out, ci = TRUE)
 ```
 
 ```
@@ -165,7 +167,7 @@ vus(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, c
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus(method = "fi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, 
+## CALL: vus_mar(method = "fi", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
 ##     ci = TRUE)
 ##  
 ## Estimate of VUS: 0.515 
@@ -185,12 +187,14 @@ vus(method = "fi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, c
 
 For MSI estimator, we could do that to plot ROC surface
 ```{r ROCsMSI, webgl = TRUE}
-ROCs(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ncp = 30,
+rocs(method = "msi", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+     veri_stat = EOC$V, rho_est = rho_out, ncp = 30,
      ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 and compute VUS
 ```{r vusmsi,  eval=FALSE}
-vus(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, ci = TRUE)
+vus_mar(method = "msi", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+        veri_stat = EOC$V, rho_est = rho_out, ci = TRUE)
 ```
 
 ```
@@ -202,7 +206,7 @@ vus(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, 
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus(method = "msi", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, 
+## CALL: vus_mar(method = "msi", diag_test =  CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
 ##     ci = TRUE)
 ##  
 ## Estimate of VUS: 0.5183 
@@ -221,20 +225,23 @@ vus(method = "msi", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out, 
 ```
 
 ### IPW and SPE Estimator
-The IPW and SPE estimator require the estimation for verification probabilities. In order to do that we can employ some regression model for binary response, i.e. logistic, probit and may be threshold. Here, we consider the implementation of logistic model. In this package, the function `psglm()` is used to fit the verificaion model.
+The IPW and SPE estimator require the estimation for verification probabilities. In order to do that we can employ some regression model for binary response, i.e. logistic, probit and may be threshold. Here, we consider the implementation of logistic model. In this package, the function `psglm()` is used to fit the verification model.
 
 ```{r verification, eval = TRUE}
-pi.out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, model = "logit", test = TRUE, trace = TRUE)
+pi_out <- psglm(V ~ CA125 + CA153 + Age, data = EOC, model = "logit", 
+                test = TRUE, trace = TRUE)
 ```
 
 To plot the ROC surface and estimate VUS, we do
 ```{r ROCsIPW, webgl = TRUE}
-ROCs(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ncp = 30,
+rocs(method = "ipw", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+     veri_stat = EOC$V, pi_est = pi_out, ncp = 30,
      ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 
 ```{r vusipw, eval=FALSE}
-vus(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ci = TRUE)
+vus_mar(method = "ipw", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+        veri_stat = EOC$V, pi_est = pi_out, ci = TRUE)
 ```
 
 ```
@@ -246,7 +253,7 @@ vus(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ci
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus(method = "ipw", T = CA125, Dvec = Dvec.na, V = V, piEst = pi.out, 
+## CALL: vus_mar(method = "ipw", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, pi_est = pi_out, 
 ##     ci = TRUE)
 ## 
 ## Estimate of VUS: 0.55 
@@ -267,13 +274,15 @@ vus(method = "ipw", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, piEst = pi.out, ci
 For SPE estimator, we type
 
 ```{r ROCsSPE, webgl = TRUE}
-ROCs(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
-     piEst = pi.out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+rocs(method = "spe", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+     veri_stat = EOC$V, rho_est = rho_out,
+     pi_est = pi_out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 to provide the plot of ROC surface, and 
 ```{r vusspe, eval=FALSE}
-vus(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
-    piEst = pi.out, ci = TRUE)
+vus_mar(method = "spe", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+        veri_stat = EOC$V, rho_est = rho_out,
+        pi_est = pi_out, ci = TRUE)
 ```
 ```
 ## Hmm, look likes the incomplete data
@@ -284,8 +293,8 @@ vus(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus(method = "spe", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.out, 
-##     piEst = pi.out, ci = TRUE)
+## CALL: vus_mar(method = "spe", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
+##     pi_est = pi_out, ci = TRUE)
 ##  
 ## Estimate of VUS: 0.5581 
 ## Standard error: 0.0443 
@@ -303,24 +312,27 @@ vus(method = "spe", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.out,
 ```
 for VUS.
 
-Note that, the asymptotic variances of bias-corrected estimators (FI, MSI, IPW, SPE) of the VUS presented in previous parts could be obtained by using the bootstrap process. This is done in a simple way, in fact, the users only need to use the option `BOOT = TRUE` and select the number of bootstrap replication `nR` (default 250). In addition, to save the computation time, the option of parallel computing could be allowed by `parallel = TRUE`. In this case, the users may design the number of cpus by option `ncpus`, however, if this argument is ignored, then the defaut (a half of available cpus) will be supplied.
+Note that, the asymptotic variances of bias-corrected estimators (FI, MSI, IPW, SPE) of the VUS presented in previous parts could be obtained by using the bootstrap process. This is done in a simple way, in fact, the users only need to use the option `boot = TRUE` and select the number of bootstrap replication `n_boot` (default 250). In addition, to save the computation time, the option of parallel computing could be allowed by `parallel = TRUE`. In this case, the users may design the number of cpus by option `ncpus`, however, if this argument is ignored, then the defaut (a half of available cpus) will be supplied.
 
 ### KNN estimator
 Like the MSI estimator, the KNN approach is based on the estimate of disease probabilities. However, in this framework, we will use K nearest-neighbor estimators.
 
 #### 1NN estimator
 ```{r 1nn, eval = TRUE}
-XX <- cbind(EOC$CA125, EOC$CA153, EOC$Age)
-rho.1nn <- rhoKNN(XX, Dvec = Dvec.na, V = EOC$V, K = 1, type = "mahala")
+x_mat <- cbind(EOC$CA125, EOC$CA153, EOC$Age)
+rho_1nn <- rho_knn(x_mat, dise_vec = dise_vec_na, veri_stat = EOC$V, k = 1, 
+                   type = "mahala")
 ```
 ```{r ROCs1NN, webgl = TRUE}
-ROCs("knn", T = EOC$CA125, Dvec.na, V = EOC$V, rhoEst = rho.1nn, ncp = 30, ellipsoid = TRUE,
+rocs("knn", diag_test = EOC$CA125, dise_vec_na, veri_stat = EOC$V, 
+     rho_est = rho_1nn, ncp = 30, ellipsoid = TRUE,
      cpst = c(-0.56, 2.31))
 ```
 
 ```{r vus1nn, eval = FALSE}
-vus(method = "knn", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.1nn, ci = TRUE,
-    parallel = TRUE)
+vus_mar(method = "knn", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+        veri_stat = EOC$V, rho_est = rho_1nn, ci = TRUE,
+        parallel = TRUE)
 ```
 
 ```
@@ -332,7 +344,7 @@ vus(method = "knn", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.1nn, 
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus(method = "knn", T = CA125, Dvec = Dvec.na, V = V, rhoEst = rho.1nn, 
+## CALL: vus_mar(method = "knn", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_1nn, 
 ##     ci = TRUE, parallel = TRUE)
 ##  
 ## Estimate of VUS: 0.5123 
@@ -353,5 +365,5 @@ vus(method = "knn", T = EOC$CA125, Dvec = Dvec.na, V = EOC$V, rhoEst = rho.1nn, 
 To find the good choice for the number of nearest-neighbor, we use the following command:
 
 ```{r cvKnn, eval = TRUE}
-CVknn(XX, Dvec.na, EOC$V, type = "mahala", plot = TRUE)
+cv_knn(x_mat, dise_vec_na, EOC$V, type = "mahala", plot = TRUE)
 ```

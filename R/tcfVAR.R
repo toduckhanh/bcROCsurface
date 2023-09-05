@@ -53,7 +53,7 @@
 #' # Preparing the missing disease status
 #' dise_na <- pre_data(EOC$D, EOC$CA125)
 #' dise_vec_na <- dise_na$dise_vec
-#' dise_fact_na <- dise_na$D
+#' dise_fact_na <- dise_na$dise
 #'
 #' rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
 #'                       test = TRUE)
@@ -173,7 +173,7 @@ asy_cov_tcf <- function(obj_tcf, diag_test, dise_vec, veri_stat = NULL,
   } else if (method == "knn") {
     if (!boot) {
       x_mat <- rho_est$X
-      rho_knn_est <- rho_knn(x_mat, dise_vec, veri_stat, K = 2,
+      rho_knn_est <- rho_knn(x_mat, dise_vec, veri_stat, k = 2,
                              type = rho_est$type)$values
       pi_knn_est <- psknn(x_mat, veri_stat, rho_est$type)
       ans <- asy_cov_knn(diag_test, tcf_thet, tcf_bet, cp, pi_knn_est,
@@ -182,7 +182,7 @@ asy_cov_tcf <- function(obj_tcf, diag_test, dise_vec, veri_stat = NULL,
       bst_knn <- function(dt, inds, cp, k, type) {
         dat <- dt[inds, ]
         x_mat <- as.matrix(dat[, -c(1:5)])
-        rho_knn_est <- rho_knn(x_mat, as.matrix(dat[, c(2:4)]), dat[, 5], K = k,
+        rho_knn_est <- rho_knn(x_mat, as.matrix(dat[, c(2:4)]), dat[, 5], k = k,
                                type = type)
         rocs.tcf(method = "knn", diag_test = dat[, 1],
                  dise_vec = as.matrix(dat[, c(2:4)]),

@@ -15,7 +15,7 @@ LazyLoad: yes
 LazyData: TRUE
 ByteCompile: yes
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Suggests: webshot2, knitr, rmarkdown, markdown
 URL: https://github.com/toduckhanh/bcROCsurface
 BugReports: https://github.com/toduckhanh/bcROCsurface/issues

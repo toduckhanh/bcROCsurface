@@ -11,9 +11,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// asyVarVUS_C
-NumericVector asyVarVUS_C(NumericVector tt, NumericMatrix D_hat, double mu_hat, NumericMatrix EstFunc, NumericMatrix Hess_inv, NumericMatrix Der_D1_hat, NumericMatrix Der_D2_hat, NumericMatrix Der_D3_hat);
-RcppExport SEXP _bcROCsurface_asyVarVUS_C(SEXP ttSEXP, SEXP D_hatSEXP, SEXP mu_hatSEXP, SEXP EstFuncSEXP, SEXP Hess_invSEXP, SEXP Der_D1_hatSEXP, SEXP Der_D2_hatSEXP, SEXP Der_D3_hatSEXP) {
+// asy_var_vus_c
+NumericVector asy_var_vus_c(NumericVector tt, NumericMatrix D_hat, double mu_hat, NumericMatrix EstFunc, NumericMatrix Hess_inv, NumericMatrix Der_D1_hat, NumericMatrix Der_D2_hat, NumericMatrix Der_D3_hat);
+RcppExport SEXP _bcROCsurface_asy_var_vus_c(SEXP ttSEXP, SEXP D_hatSEXP, SEXP mu_hatSEXP, SEXP EstFuncSEXP, SEXP Hess_invSEXP, SEXP Der_D1_hatSEXP, SEXP Der_D2_hatSEXP, SEXP Der_D3_hatSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,45 +25,45 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type Der_D1_hat(Der_D1_hatSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Der_D2_hat(Der_D2_hatSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type Der_D3_hat(Der_D3_hatSEXP);
-    rcpp_result_gen = Rcpp::wrap(asyVarVUS_C(tt, D_hat, mu_hat, EstFunc, Hess_inv, Der_D1_hat, Der_D2_hat, Der_D3_hat));
+    rcpp_result_gen = Rcpp::wrap(asy_var_vus_c(tt, D_hat, mu_hat, EstFunc, Hess_inv, Der_D1_hat, Der_D2_hat, Der_D3_hat));
     return rcpp_result_gen;
 END_RCPP
 }
-// vusC
-double vusC(NumericVector tt, NumericMatrix dd);
-RcppExport SEXP _bcROCsurface_vusC(SEXP ttSEXP, SEXP ddSEXP) {
+// vus_c
+double vus_c(NumericVector tt, NumericMatrix dd);
+RcppExport SEXP _bcROCsurface_vus_c(SEXP ttSEXP, SEXP ddSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type tt(ttSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type dd(ddSEXP);
-    rcpp_result_gen = Rcpp::wrap(vusC(tt, dd));
+    rcpp_result_gen = Rcpp::wrap(vus_c(tt, dd));
     return rcpp_result_gen;
 END_RCPP
 }
-// vusC_full
-double vusC_full(NumericVector tt1, NumericVector tt2, NumericVector tt3);
-RcppExport SEXP _bcROCsurface_vusC_full(SEXP tt1SEXP, SEXP tt2SEXP, SEXP tt3SEXP) {
+// vus_c_full
+double vus_c_full(NumericVector tt1, NumericVector tt2, NumericVector tt3);
+RcppExport SEXP _bcROCsurface_vus_c_full(SEXP tt1SEXP, SEXP tt2SEXP, SEXP tt3SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type tt1(tt1SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tt2(tt2SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tt3(tt3SEXP);
-    rcpp_result_gen = Rcpp::wrap(vusC_full(tt1, tt2, tt3));
+    rcpp_result_gen = Rcpp::wrap(vus_c_full(tt1, tt2, tt3));
     return rcpp_result_gen;
 END_RCPP
 }
-// vusC_full_core
-List vusC_full_core(NumericVector tt1, NumericVector tt2, NumericVector tt3);
-RcppExport SEXP _bcROCsurface_vusC_full_core(SEXP tt1SEXP, SEXP tt2SEXP, SEXP tt3SEXP) {
+// vus_c_full_core
+List vus_c_full_core(NumericVector tt1, NumericVector tt2, NumericVector tt3);
+RcppExport SEXP _bcROCsurface_vus_c_full_core(SEXP tt1SEXP, SEXP tt2SEXP, SEXP tt3SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type tt1(tt1SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tt2(tt2SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tt3(tt3SEXP);
-    rcpp_result_gen = Rcpp::wrap(vusC_full_core(tt1, tt2, tt3));
+    rcpp_result_gen = Rcpp::wrap(vus_c_full_core(tt1, tt2, tt3));
     return rcpp_result_gen;
 END_RCPP
 }

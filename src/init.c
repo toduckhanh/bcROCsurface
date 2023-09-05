@@ -8,16 +8,16 @@ Check these declarations against the C/Fortran source code.
 */
 
 /* .Call calls */
-extern SEXP _bcROCsurface_asyVarVUS_C(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _bcROCsurface_vusC(SEXP, SEXP);
-extern SEXP _bcROCsurface_vusC_full(SEXP, SEXP, SEXP);
-extern SEXP _bcROCsurface_vusC_full_core(SEXP, SEXP, SEXP);
+extern SEXP _bcROCsurface_asy_var_vus_c(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _bcROCsurface_vus_c(SEXP, SEXP);
+extern SEXP _bcROCsurface_vus_c_full(SEXP, SEXP, SEXP);
+extern SEXP _bcROCsurface_vus_c_full_core(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-  {"_bcROCsurface_asyVarVUS_C",    (DL_FUNC) &_bcROCsurface_asyVarVUS_C,    8},
-  {"_bcROCsurface_vusC",           (DL_FUNC) &_bcROCsurface_vusC,           2},
-  {"_bcROCsurface_vusC_full",      (DL_FUNC) &_bcROCsurface_vusC_full,      3},
-  {"_bcROCsurface_vusC_full_core", (DL_FUNC) &_bcROCsurface_vusC_full_core, 3},
+  {"_bcROCsurface_asy_var_vus_c",  (DL_FUNC) &_bcROCsurface_asy_var_vus_c,   8},
+  {"_bcROCsurface_vus_c",          (DL_FUNC) &_bcROCsurface_vus_c,           2},
+  {"_bcROCsurface_vus_c_full",     (DL_FUNC) &_bcROCsurface_vus_c_full,      3},
+  {"_bcROCsurface_vus_c_full_core",(DL_FUNC) &_bcROCsurface_vus_c_full_core, 3},
   {NULL, NULL, 0}
 };
 

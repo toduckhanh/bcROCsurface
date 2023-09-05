@@ -6,16 +6,16 @@
 ##
 #' @title Asymptotic variance estimation for VUS
 #'
-#' @description \code{asyVarVUS} computes the asymptotic variance of full data (FULL) and bias-corrected estimators (i.e. full imputation, mean score imputation, inverse probability weighting, semiparametric efficient and K nearest neighbor) of VUS.
+#' @description \code{asy_var_vus} computes the asymptotic variance of full data (FULL) and bias-corrected estimators (i.e. full imputation, mean score imputation, inverse probability weighting, semiparametric efficient and K nearest neighbor) of VUS.
 #'
-#' @param obj_vus  a result of a call to \code{\link{vus}}.
-#' @param Test  a numeric vector containing the diagnostic test values. \code{NA} values of \code{Test} are not accepted.
-#' @param Dvec  a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
-#' @param V  a binary vector containing the verification status (1 verified, 0 not verified).
-#' @param rhoEst  a result of a call to \code{\link{rhoMLogit}} of \code{\link{rhoKNN}} to fit the disease model.
-#' @param piEst  a result of a call to \code{\link{psglm}} to fit the verification model.
-#' @param BOOT a logical value. Default = \code{FALSE}. If set to \code{TRUE}, a bootstrap resampling is employed to estimate the asymptotic variance of the bias-corrected VUS estimators.
-#' @param nR  the number of bootstrap replicates, which is used for FULL or KNN estimators, or option \code{BOOT = TRUE}. The defaut is 250.
+#' @param obj_vus  a result of a call to \code{\link{vus_mar}}.
+#' @param diag_test  a numeric vector containing the diagnostic test values. \code{NA} values of \code{diag_test} are not accepted.
+#' @param dise_vec  a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
+#' @param veri_stat  a binary vector containing the verification status (1 verified, 0 not verified).
+#' @param rho_est  a result of a call to \code{\link{rho_mlogit}} of \code{\link{rho_knn}} to fit the disease model.
+#' @param pi_est  a result of a call to \code{\link{psglm}} to fit the verification model.
+#' @param boot a logical value. Default = \code{FALSE}. If set to \code{TRUE}, a bootstrap resampling is employed to estimate the asymptotic variance of the bias-corrected VUS estimators.
+#' @param n_boot  the number of bootstrap replicates, which is used for FULL or KNN estimators, or option \code{boot = TRUE}. The defaut is 250.
 #' @param parallel  a logical value. If \code{TRUE}, a parallel computing is employed in the bootstrap resampling process.
 #' @param ncpus  number of processes to be used in parallel computing. Default is half of available cores.
 #'
@@ -25,7 +25,7 @@
 #'
 #' For the full imputation, mean score imputation, inverse probability weighting and semiparametric efficient estimators of VUS, the asymptotic variances are computed by using the explicit form. Furthermore, a bootstrap procedure is also available, useful in case of small sample sizes.
 #'
-#' @return \code{asyVarVUS} returns a estimated value of the asymptotic variance.
+#' @return \code{asy_var_vus} returns a estimated value of the asymptotic variance.
 #'
 #' @references
 #' To Duc, K., Chiogna, M. and Adimari, G. (2020)
@@ -45,20 +45,22 @@
 #' data(EOC)
 #'
 #' # Preparing the missing disease status
-#' Dna <- preDATA(EOC$D, EOC$CA125)
-#' Dfact_na <- Dna$D
-#' Dvec_na <- Dna$Dvec
+#' dise_na <- pre_data(EOC$D, EOC$CA125)
+#' dise_vec_na <- dise_na$dise_vec
+#' dise_fact_na <- dise_na$dise
 #'
-#' rho_out <- rhoMLogit(Dfact_na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
-#' vus_fi <- vus("fi", Test = EOC$CA125, Dvec = Dvec_na, V = EOC$V,
-#'               rhoEst = rho_out, ci = FALSE)
-#' var_fi <- asyVarVUS(vus_fi, Test = EOC$CA125, Dvec = Dvec_na, V = EOC$V,
-#'                     rhoEst = rho_out)
+#' rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
+#'                       test = TRUE)
+#' vus_fi <- vus("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+#'               veri_stat = EOC$V, rho_est = rho_out, ci = FALSE)
+#' var_fi <- asy_var_vus(vus_fi, diag_test = EOC$CA125, dise_vec = dise_vec_na,
+#'                       veri_stat = EOC$V, rho_est = rho_out)
 #'
 #' \dontrun{
-#' var_bst_spe <- asyVarVUS(vus_spe, Test = EOC$CA125, Dvec = Dvec_na, V = EOC$V,
-#'                          rhoEst = rho_out, piEst = pi_out, BOOT = TRUE,
-#'                          parallel = TRUE)
+#' var_bst_spe <- asy_var_vus(vus_spe, diag_test = EOC$CA125,
+#'                            dise_vec = dise_vec_na, veri_stat = EOC$V,
+#'                            rho_est = rho_out, pi_est = pi_out, boot = TRUE,
+#'                            parallel = TRUE)
 #' }
 #'
 #'
@@ -66,225 +68,241 @@
 #' @import parallel
 #' @import boot
 #' @export
-asyVarVUS <- function(obj_vus, Test, Dvec, V = NULL, rhoEst = NULL,
-                      piEst = NULL, BOOT = FALSE, nR = 250, parallel = FALSE,
-                      ncpus = ifelse(parallel, detectCores() / 2, NULL)) {
+asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
+                        rho_est = NULL, pi_est = NULL, boot = FALSE,
+                        n_boot = 250, parallel = FALSE,
+                        ncpus = ifelse(parallel, detectCores() / 2, NULL)) {
   if (!inherits(obj_vus, "vus"))
     stop("The argument \"obj_vus\" is not a result of vus()")
-  ## checking the argument Test
-  if (missing(Test)) stop("argument \"Test\" is missing \n")
-  if (!inherits(Test, "numeric") || any(is.na(Test)))
-    stop("variable \"Test\" must be a numeric vector and not include NA values")
-  ## checking Dvec
-  if (missing(Dvec)) stop("argument \"Dvec\" is missing \n")
-  if (!inherits(Dvec, "matrix") || ncol(Dvec) != 3 ||
-        !all(is.element(na.omit(Dvec), c(0, 1))))
-    stop("variable \"Dvec\" must be a binary matrix with 3 columns")
-  if (length(Test) != nrow(Dvec))
+  ## checking the argument diag_test
+  if (missing(diag_test)) stop("argument \"diag_test\" is missing \n")
+  if (!inherits(diag_test, "numeric") || any(is.na(diag_test)))
+    stop("\"diag_test\" must be a numeric vector and not include NA values")
+  ## checking dise_vec
+  if (missing(dise_vec)) stop("argument \"dise_vec\" is missing \n")
+  if (!inherits(dise_vec, "matrix") || ncol(dise_vec) != 3 ||
+        !all(is.element(na.omit(dise_vec), c(0, 1))))
+    stop("variable \"dise_vec\" must be a binary matrix with 3 columns")
+  if (length(diag_test) != nrow(dise_vec))
     stop(gettextf("arguments imply differing number of observation: %d",
-                  length(Test)), gettextf(", %d", nrow(Dvec)), domain = NA)
-  VUS_obj <- obj_vus$vus_fit
-  meth <- tolower(attr(VUS_obj, "name"))
-  if (!is.element(meth, c("full", "fi")) && is.null(V))
-    stop("argument \"V\" is missing \n")
-  if (is.element(meth, c("fi", "msi", "knn", "spe")) && is.null(rhoEst))
-    stop("argument \"rhoEst\" is missing \n")
-  if (is.element(meth, c("ipw", "spe")) && is.null(piEst))
-    stop("argument \"piEst\" is missing \n")
+                  length(diag_test)), gettextf(", %d", nrow(dise_vec)),
+         domain = NA)
+  vus_obj <- obj_vus$vus_fit
+  meth <- tolower(attr(vus_obj, "name"))
+  if (!is.element(meth, c("full", "fi")) && is.null(veri_stat))
+    stop("argument \"veri_stat\" is missing \n")
+  if (is.element(meth, c("fi", "msi", "knn", "spe")) && is.null(rho_est))
+    stop("argument \"rho_est\" is missing \n")
+  if (is.element(meth, c("ipw", "spe")) && is.null(pi_est))
+    stop("argument \"pi_est\" is missing \n")
   ##
-  if (!is.null(rhoEst)) {
-    if (!is.element(class(rhoEst), c("prob_dise", "prob_dise_knn")))
-      stop("\"rhoEst\" not a result of rhoMlogit or rhoKNN \n")
-    if (is.element(class(rhoEst), c("prob_dise_knn"))) {
-      if (is.null(rhoEst$K))
+  if (!is.null(rho_est)) {
+    if (!is.element(class(rho_est), c("prob_dise", "prob_dise_knn")))
+      stop("\"rho_est\" not a result of rhoMlogit or rho_knn \n")
+    if (is.element(class(rho_est), c("prob_dise_knn"))) {
+      if (is.null(rho_est$K))
         stop("Please, choose one value of K\n")
     }
   }
-  if (!is.null(piEst)) {
-    if (!is.element(class(piEst), c("prob_veri")))
-      stop("\"piEst\" not a result of psglm \n")
+  if (!is.null(pi_est)) {
+    if (!is.element(class(pi_est), c("prob_veri")))
+      stop("\"pi_est\" not a result of psglm \n")
   }
-  n <- length(Test)
-  Dvec_temp <- Dvec
-  if (any(is.na(Dvec))) Dvec_temp[is.na(Dvec)] <- 99
+  n <- length(diag_test)
+  dise_vec_temp <- dise_vec
+  if (any(is.na(dise_vec))) dise_vec_temp[is.na(dise_vec)] <- 99
   if (meth == "fi") {
-    if (!BOOT) {
-      score <- mlogEstFunc(Dvec_temp, V, rhoEst$X, rhoEst$values)
-      hess <- solve(rhoEst$Hess)
-      der_rho1 <- t(rho_deriv(rhoEst$X, rhoEst$values, ref_level = "1"))
-      der_rho2 <- t(rho_deriv(rhoEst$X, rhoEst$values, ref_level = "2"))
+    if (!boot) {
+      score <- mlog_est_func(dise_vec_temp, veri_stat, rho_est$X,
+                             rho_est$values)
+      hess <- solve(rho_est$Hess)
+      der_rho1 <- t(rho_deriv(rho_est$X, rho_est$values, ref_level = "1"))
+      der_rho2 <- t(rho_deriv(rho_est$X, rho_est$values, ref_level = "2"))
       der_rho3 <- - (der_rho1 + der_rho2)
-      Q_Fi <- asyVarVUS_C(Test, rhoEst$values, VUS_obj, score, hess, der_rho1,
-                          der_rho2, der_rho3)
-      ans_var <- n ^ 4 * sum(Q_Fi ^ 2) / prod(colSums(rhoEst$values) ^ 2)
+      q_fi <- asy_var_vus_c(diag_test, rho_est$values, vus_obj, score, hess,
+                            der_rho1, der_rho2, der_rho3)
+      ans_var <- n ^ 4 * sum(q_fi ^ 2) / prod(colSums(rho_est$values) ^ 2)
     } else {
       bst_fi <- function(dt, inds, formula) {
         dat <- dt[inds, ]
-        out <- rhoMLogit(formula, data = dat)
-        vusC(dat[, 1], out$values)
+        out <- rho_mlogit(formula, data = dat)
+        vus_c(dat[, 1], out$values)
       }
-      name_var <- as.character(attributes(terms(rhoEst$formula))$variables)[-1]
-      data <- data.frame(Test, rhoEst$D, rhoEst$X[, name_var[-1]])
+      name_var <- as.character(attributes(terms(rho_est$formula))$variables)[-1]
+      data <- data.frame(diag_test, rho_est$D, rho_est$X[, name_var[-1]])
       names(data) <- c("Temp", name_var)
       if (parallel) {
-        res_bst <- boot(data, bst_fi, R = nR, formula = rhoEst$formula,
+        res_bst <- boot(data, bst_fi, R = n_boot, formula = rho_est$formula,
                         parallel = "snow", ncpus = ncpus)
       } else {
-        res_bst <- boot(data, bst_fi, R = nR, formula = rhoEst$formula)
+        res_bst <- boot(data, bst_fi, R = n_boot, formula = rho_est$formula)
       }
       ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
     }
   } else if (meth == "msi") {
-    if (!BOOT) {
-      D_MSI <- as.matrix(V * Dvec_temp + (1 - V) * rhoEst$values)
-      score <- mlogEstFunc(Dvec_temp, V, rhoEst$X, rhoEst$values)
-      hess <- solve(rhoEst$Hess)
-      der_D_MSI1 <- t((1 - V) * rho_deriv(rhoEst$X, rhoEst$values,
+    if (!boot) {
+      d_msi <- as.matrix(veri_stat * dise_vec_temp +
+                           (1 - veri_stat) * rho_est$values)
+      score <- mlog_est_func(dise_vec_temp, veri_stat, rho_est$X,
+                             rho_est$values)
+      hess <- solve(rho_est$Hess)
+      der_d_msi1 <- t((1 - veri_stat) * rho_deriv(rho_est$X, rho_est$values,
                                           ref_level = "1"))
-      der_D_MSI2 <- t((1 - V) * rho_deriv(rhoEst$X, rhoEst$values,
+      der_d_msi2 <- t((1 - veri_stat) * rho_deriv(rho_est$X, rho_est$values,
                                           ref_level = "2"))
-      der_D_MSI3 <- - (der_D_MSI1 + der_D_MSI2)
-      Q_Msi <- asyVarVUS_C(Test, D_MSI, VUS_obj, score, hess, der_D_MSI1,
-                           der_D_MSI2, der_D_MSI3)
-      ans_var <- n ^ 4 * sum(Q_Msi ^ 2) / prod(colSums(D_MSI) ^ 2)
+      der_d_msi3 <- - (der_d_msi1 + der_d_msi2)
+      q_msi <- asy_var_vus_C(diag_test, d_msi, vus_obj, score, hess, der_d_msi1,
+                           der_d_msi2, der_d_msi3)
+      ans_var <- n ^ 4 * sum(q_msi ^ 2) / prod(colSums(d_msi) ^ 2)
     } else {
       bst_msi <- function(dt, inds, formula) {
         dat <- dt[inds, ]
-        out <- rhoMLogit(formula, data = dat)
-        Dmsi <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, "V"] +
+        out <- rho_mlogit(formula, data = dat)
+        d_msi <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, "V"] +
                             (1 - dat[, "V"]) * out$values)
-        vusC(dat[, 1], Dmsi)
+        vus_c(dat[, 1], d_msi)
       }
-      name_var <- as.character(attributes(terms(rhoEst$formula))$variables)[-1]
-      data <- data.frame(Test, rhoEst$D, rhoEst$X[, name_var[-1]], V, Dvec_temp)
+      name_var <- as.character(attributes(terms(rho_est$formula))$variables)[-1]
+      data <- data.frame(diag_test, rho_est$D, rho_est$X[, name_var[-1]],
+                         veri_stat, dise_vec_temp)
       names(data) <- c("Temp", name_var, "V", "D1", "D2", "D3")
       if (parallel) {
-        res_bst <- boot(data, bst_msi, R = nR, formula = rhoEst$formula,
+        res_bst <- boot(data, bst_msi, R = n_boot, formula = rho_est$formula,
                         parallel = "snow", ncpus = ncpus)
       } else {
-        res_bst <- boot(data, bst_msi, R = nR, formula = rhoEst$formula)
+        res_bst <- boot(data, bst_msi, R = n_boot, formula = rho_est$formula)
       }
       ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
     }
   } else if (meth == "ipw") {
-    if (!BOOT) {
-      D_IPW <- as.matrix(V * Dvec_temp / piEst$values)
-      score <- piEstFunc(V, piEst$X, piEst$values, piEst$coeff, piEst$model)
-      hess <- solve(piEst$Hess)
-      der_pi_inv <- pi_inv_deriv(piEst$X, piEst$values, piEst$coeff,
-                                 piEst$model)
-      der_D_IPW1 <- t(V * Dvec_temp[, 1] * der_pi_inv)
-      der_D_IPW2 <- t(V * Dvec_temp[, 2] * der_pi_inv)
-      der_D_IPW3 <- t(V * Dvec_temp[, 3] * der_pi_inv)
-      Q_Ipw <- asyVarVUS_C(Test, D_IPW, VUS_obj, score, hess, der_D_IPW1,
-                           der_D_IPW2, der_D_IPW3)
-      ans_var <- sum(Q_Ipw ^ 2) / prod((colSums(D_IPW) /
-                                          sum(V / piEst$values)) ^ 2) / n ^ 2
+    if (!boot) {
+      d_ipw <- as.matrix(veri_stat * dise_vec_temp / pi_est$values)
+      score <- pi_est_func(veri_stat, pi_est$X, pi_est$values, pi_est$coeff,
+                          pi_est$model)
+      hess <- solve(pi_est$Hess)
+      der_pi_inv <- pi_inv_deriv(pi_est$X, pi_est$values, pi_est$coeff,
+                                 pi_est$model)
+      der_d_ipw1 <- t(veri_stat * dise_vec_temp[, 1] * der_pi_inv)
+      der_d_ipw2 <- t(veri_stat * dise_vec_temp[, 2] * der_pi_inv)
+      der_d_ipw3 <- t(veri_stat * dise_vec_temp[, 3] * der_pi_inv)
+      q_ipw <- asy_var_vus_C(diag_test, d_ipw, vus_obj, score, hess, der_d_ipw1,
+                           der_d_ipw2, der_d_ipw3)
+      ans_var <- sum(q_ipw ^ 2) /
+        prod((colSums(d_ipw) / sum(veri_stat / pi_est$values)) ^ 2) / n ^ 2
     } else {
       bst_ipw <- function(dt, inds, formula) {
         dat <- dt[inds, ]
         out <- psglm(formula, data = dat, test = FALSE, trace = FALSE)
-        Dipw <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, 2] / out$values)
-        vusC(dat[, 1], Dipw)
+        d_ipw <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, 2] / out$values)
+        vus_c(dat[, 1], d_ipw)
       }
-      name_var <- as.character(attributes(terms(piEst$formula))$variables)[-1]
-      data <- data.frame(Test, V, piEst$X[, name_var[-1]], Dvec_temp)
+      name_var <- as.character(attributes(terms(pi_est$formula))$variables)[-1]
+      data <- data.frame(diag_test, veri_stat, pi_est$X[, name_var[-1]],
+                         dise_vec_temp)
       names(data) <- c("Temp", name_var, "D1", "D2", "D3")
       if (parallel) {
-        res_bst <- boot(data, bst_ipw, R = nR, formula = piEst$formula,
+        res_bst <- boot(data, bst_ipw, R = n_boot, formula = pi_est$formula,
                         parallel = "snow", ncpus = ncpus)
       } else {
-        res_bst <- boot(data, bst_ipw, R = nR, formula = piEst$formula)
+        res_bst <- boot(data, bst_ipw, R = n_boot, formula = pi_est$formula)
       }
       ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
     }
   } else if (meth == "spe") {
-    if (!BOOT) {
-      temp1 <- V / piEst$values
-      D_SPE <- as.matrix(temp1 * Dvec_temp - (temp1 - 1) * rhoEst$values)
-      score1 <- mlogEstFunc(Dvec_temp, V, rhoEst$X, rhoEst$values)
-      score2 <- piEstFunc(V, piEst$X, piEst$values, piEst$coeff, piEst$model)
+    if (!boot) {
+      temp1 <- veri_stat / pi_est$values
+      d_spe <- as.matrix(temp1 * dise_vec_temp - (temp1 - 1) * rho_est$values)
+      score1 <- mlog_est_func(dise_vec_temp, veri_stat, rho_est$X,
+                              rho_est$values)
+      score2 <- pi_est_func(veri_stat, pi_est$X, pi_est$values, pi_est$coeff,
+                            pi_est$model)
       score <- cbind(score1, score2)
-      hess1 <- cbind(solve(rhoEst$Hess), matrix(0, nrow = nrow(rhoEst$Hess),
-                                                ncol = ncol(piEst$Hess)))
-      hess2 <- cbind(matrix(0, nrow = nrow(piEst$Hess),
-                            ncol = ncol(rhoEst$Hess)),
-                     solve(piEst$Hess))
+      hess1 <- cbind(solve(rho_est$Hess),
+                     matrix(0, nrow = nrow(rho_est$Hess),
+                            ncol = ncol(pi_est$Hess)))
+      hess2 <- cbind(matrix(0, nrow = nrow(pi_est$Hess),
+                            ncol = ncol(rho_est$Hess)),
+                     solve(pi_est$Hess))
       hess <- rbind(hess1, hess2)
-      der_rho1 <- rho_deriv(rhoEst$X, rhoEst$values, ref_level = "1")
-      der_rho2 <- rho_deriv(rhoEst$X, rhoEst$values, ref_level = "2")
-      der_pi_inv <- pi_inv_deriv(piEst$X, piEst$values, piEst$coeff,
-                                 piEst$model)
-      der_D_SPE1 <- t(cbind(-(temp1 - 1) * der_rho1,
-                            V * (Dvec_temp[, 1] - rhoEst$values[, 1]) *
-                              der_pi_inv))
-      der_D_SPE2 <- t(cbind(-(temp1 - 1) * der_rho2,
-                            V * (Dvec_temp[, 2] - rhoEst$values[, 2]) *
-                              der_pi_inv))
-      der_D_SPE3 <- -(der_D_SPE1 + der_D_SPE2)
-      Q_Spe <- asyVarVUS_C(Test, D_SPE, VUS_obj, score, hess, der_D_SPE1,
-                           der_D_SPE2, der_D_SPE3)
-      ans_var <- n ^ 4 * sum(Q_Spe ^ 2) / prod(colSums(D_SPE) ^ 2)
+      der_rho1 <- rho_deriv(rho_est$X, rho_est$values, ref_level = "1")
+      der_rho2 <- rho_deriv(rho_est$X, rho_est$values, ref_level = "2")
+      der_pi_inv <- pi_inv_deriv(pi_est$X, pi_est$values, pi_est$coeff,
+                                 pi_est$model)
+      der_d_spe1 <- t(
+        cbind(-(temp1 - 1) * der_rho1,
+              veri_stat * (dise_vec_temp[, 1] - rho_est$values[, 1]) *
+                der_pi_inv))
+      der_d_spe2 <- t(
+        cbind(-(temp1 - 1) * der_rho2,
+              veri_stat * (dise_vec_temp[, 2] - rho_est$values[, 2]) *
+                der_pi_inv))
+      der_d_spe3 <- -(der_d_spe1 + der_d_spe2)
+      q_spe <- asy_var_vus_C(diag_test, d_spe, vus_obj, score, hess, der_d_spe1,
+                           der_d_spe2, der_d_spe3)
+      ans_var <- n ^ 4 * sum(q_spe ^ 2) / prod(colSums(d_spe) ^ 2)
     } else {
       bst_spe <- function(dt, inds, formula_rho, formula_pi) {
         dat <- dt[inds, ]
-        out_rho <- rhoMLogit(formula_rho, data = dat)
+        out_rho <- rho_mlogit(formula_rho, data = dat)
         out_pi <- psglm(formula_pi, data = dat, test = FALSE, trace = FALSE)
-        Dspe <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, "V"] /
+        d_spe <- as.matrix(dat[, c("D1", "D2", "D3")] * dat[, "V"] /
                             out_pi$values - (dat[, "V"] / out_pi$values - 1) *
                             out_rho$values)
-        vusC(dat[, 1], Dspe)
+        vus_c(dat[, 1], d_spe)
       }
       name_var_rho <- as.character(
-        attributes(terms(rhoEst$formula))$variables)[-1]
+        attributes(terms(rho_est$formula))$variables)[-1]
       name_var_pi <- as.character(
-        attributes(terms(piEst$formula))$variables)[-1]
-      data_rho <- data.frame(rhoEst$X[, name_var_rho[-1]])
-      data_pi <- data.frame(piEst$X[, name_var_pi[-1]])
-      data <- data.frame(Test, V, rhoEst$D, union(data_rho, data_pi), Dvec_temp)
+        attributes(terms(pi_est$formula))$variables)[-1]
+      data_rho <- data.frame(rho_est$X[, name_var_rho[-1]])
+      data_pi <- data.frame(pi_est$X[, name_var_pi[-1]])
+      data <- data.frame(diag_test, veri_stat, rho_est$D,
+                         union(data_rho, data_pi), dise_vec_temp)
       names(data) <- c("Temp", name_var_pi[1], name_var_rho[1],
                        union(name_var_rho[-1], name_var_pi[-1]), "D1", "D2",
                        "D3")
       if (parallel) {
-        res_bst <- boot(data, bst_spe, R = nR, formula_rho = rhoEst$formula,
-                        formula_pi = piEst$formula, parallel = "snow",
+        res_bst <- boot(data, bst_spe, R = n_boot,
+                        formula_rho = rho_est$formula,
+                        formula_pi = pi_est$formula, parallel = "snow",
                         ncpus = ncpus)
       } else {
-        res_bst <- boot(data, bst_spe, R = nR, formula_rho = rhoEst$formula,
-                        formula_pi = piEst$formula)
+        res_bst <- boot(data, bst_spe, R = n_boot,
+                        formula_rho = rho_est$formula,
+                        formula_pi = pi_est$formula)
       }
       ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
     }
   } else if (meth == "knn") {
     bst_knn <- function(dt, inds, k, type) {
       dat <- dt[inds, ]
-      XX <- as.matrix(dat[, -c(1:5)])
+      x_mat <- as.matrix(dat[, -c(1:5)])
       dise_bt <- as.matrix(dat[, c(2:4)])
       dise_bt[dise_bt == 99] <- NA
-      rho_knn <- rhoKNN(XX, dise_bt, dat[, 5], K = k, type = type)
-      Dknn <- as.matrix(dat[, c(2:4)] * dat[, 5] +
-                          (1 - dat[, 5]) * rho_knn$values)
-      vusC(dat[, 1], Dknn)
+      rho_knn <- rho_knn(x_mat, dise_bt, dat[, 5], k = k, type = type)
+      d_knn <- as.matrix(dat[, c(2:4)] * dat[, 5] +
+                           (1 - dat[, 5]) * rho_knn$values)
+      vus_c(dat[, 1], d_knn)
     }
-    data <- data.frame(Test, Dvec_temp, V, rhoEst$X)
+    data <- data.frame(diag_test, dise_vec_temp, veri_stat, rho_est$X)
     if (parallel) {
-      res_bst <- boot(data, bst_knn, R = nR, k = rhoEst$K, type = rhoEst$type,
-                      parallel = "snow", ncpus = ncpus)
+      res_bst <- boot(data, bst_knn, R = n_boot, k = rho_est$K,
+                      type = rho_est$type, parallel = "snow", ncpus = ncpus)
     } else {
-      res_bst <- boot(data, bst_knn, R = nR, k = rhoEst$K,
-                      type = rhoEst$type)
+      res_bst <- boot(data, bst_knn, R = n_boot, k = rho_est$K,
+                      type = rho_est$type)
     }
     ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
   } else {
-    if (!BOOT) {
-      Test1 <- Test[Dvec[, 1] == 1]
-      Test2 <- Test[Dvec[, 2] == 1]
-      Test3 <- Test[Dvec[, 3] == 1]
-      n1 <- length(Test1)
-      n2 <- length(Test2)
-      n3 <- length(Test3)
-      vus_est_mult <- VUS_obj * n1 * n2 * n3
-      var_term <- vusC_full_core(Test1, Test2, Test3)
+    if (!boot) {
+      diag_test1 <- diag_test[dise_vec[, 1] == 1]
+      diag_test2 <- diag_test[dise_vec[, 2] == 1]
+      diag_test3 <- diag_test[dise_vec[, 3] == 1]
+      n1 <- length(diag_test1)
+      n2 <- length(diag_test2)
+      n3 <- length(diag_test3)
+      vus_est_mult <- vus_obj * n1 * n2 * n3
+      var_term <- vus_c_full_core(diag_test1, diag_test2, diag_test3)
       var_term_i <- sapply(1:n1, function(x) sum(var_term$ind1[-x]))
       var_term_j <- sapply(1:n2, function(x) sum(var_term$ind2[-x]))
       var_term_k <- sapply(1:n3, function(x) sum(var_term$ind3[-x]))
@@ -294,14 +312,14 @@ asyVarVUS <- function(obj_vus, Test, Dvec, V = NULL, rhoEst = NULL,
     } else {
       bst_full <- function(dt, inds) {
         dat <- dt[inds, ]
-        vusC(dat[, 1], as.matrix(dat[, c(2:4)]))
+        vus_c(dat[, 1], as.matrix(dat[, c(2:4)]))
       }
-      data <- data.frame(Test, Dvec_temp)
+      data <- data.frame(diag_test, dise_vec_temp)
       if (parallel) {
-        res_bst <- boot(data, bst_full, R = nR, parallel = "snow",
+        res_bst <- boot(data, bst_full, R = n_boot, parallel = "snow",
                         ncpus = ncpus)
       } else {
-        res_bst <- boot(data, bst_full, R = nR)
+        res_bst <- boot(data, bst_full, R = n_boot)
       }
       ans_var <- as.numeric(var(res_bst$t, na.rm = TRUE))
     }
