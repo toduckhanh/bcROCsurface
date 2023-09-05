@@ -64,7 +64,7 @@ psglm <- function(formula, data, model = "logit", test = FALSE,
       print(summary(md_temp)$coefficients[, c(3, 4)])
       cat("=================================================================\n")
     }
-    fit <- list(coeff = res_coef, values = res_est, hess = res_hess,
+    fit <- list(coeff = res_coef, values = res_est, Hess = res_hess,
                 X = md_temp$x, formula = formula, model = model)
     class(fit) <- "prob_veri"
   } else {

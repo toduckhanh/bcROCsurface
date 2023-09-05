@@ -86,10 +86,10 @@
 #'
 #' \dontrun{
 #' # FULL data estimator
-#' Dfull <- preDATA(EOC$D.full, EOC$CA125)
-#' dise_vec.full <- Dfull$dise_vec
+#' dise_full <- pre_data(EOC$D.full, EOC$CA125)
+#' dise_vec_full <- dise_full$dise_vec
 #' if(requireNamespace("webshot2", quietly = TRUE)){
-#'    rocs("full", diag_test = EOC$CA125, dise_vec = dise_vec.full, ncp = 30,
+#'    rocs("full", diag_test = EOC$CA125, dise_vec = dise_vec_full, ncp = 30,
 #'         ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 #' }
 #' }
@@ -98,7 +98,7 @@
 #' # Preparing the missing disease status
 #' dise_na <- pre_data(EOC$D, EOC$CA125)
 #' dise_vec_na <- dise_na$dise_vec
-#' dise_fact_na <- dise_na$D
+#' dise_fact_na <- dise_na$dise
 #'
 #' # FI estimator
 #' rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
@@ -470,7 +470,7 @@ rocs <- function(method = "full", diag_test, dise_vec, veri_stat,
                             c(0, 0, 0, 1))
     par3d(windowRect = 50 + c(0, 0, 640, 640), userMatrix = my_user_matrix)
     plot3d(0, 0, 0, type = "n", box = FALSE, xlab = " ", ylab = " ", zlab = " ",
-           xlim = c(0, 1), ylim = c(0, 1), zlim = c(0, 1), ...)
+           xlim = c(0, 1), ylim = c(0, 1), zlim = c(0, 1), axes = FALSE, ...)
     axes3d(edges = c("x--", "y--", "z--"))
     mtext3d("TCF 1", "x--", line = 2, at = 0.35)
     mtext3d("TCF 2", "z--", line = 4, at = 0.55)
@@ -519,7 +519,7 @@ rocs <- function(method = "full", diag_test, dise_vec, veri_stat,
       res$tcf <- tcf_orgi
       if (sig_test < .Machine$double.eps) {
         cat("The asymptotic variance-covariance matrix of TCFs at",
-            paste("(",cpst[1],", ",cpst[2],")", sep = ""),
+            paste("(", cpst[1],", ", cpst[2],")", sep = ""),
             "is not singular!\n")
         cat("The ellipsoidal confidence region is not available!\n")
         if (!boot && method_temp != "full")
@@ -530,9 +530,9 @@ rocs <- function(method = "full", diag_test, dise_vec, veri_stat,
       } else {
         res$message <- 1
         ellip_tcf <- shade_ellips(tcf_orgi, tcf_sig, ci_level)
-        plot3d(ellip_tcf, box = FALSE, col = surf_col[2], alpha = 0.5, xlim = c(0,1),
-               ylim = c(0, 1), zlim = c(0, 1), xlab = " ", ylab = " ",
-               zlab = " ", add = TRUE, ...)
+        plot3d(ellip_tcf, box = FALSE, col = surf_col[2], alpha = 0.5,
+               xlim = c(0, 1), ylim = c(0, 1), zlim = c(0, 1), xlab = " ",
+               ylab = " ", zlab = " ", add = TRUE, ...)
         plot3d(tcf_orgi[1], tcf_orgi[3], tcf_orgi[2], type = "s", col = "red",
                radius = 0.01, add = TRUE, ...)
       }

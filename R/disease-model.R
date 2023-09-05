@@ -32,7 +32,7 @@
 #' @examples
 #' data(EOC)
 #' dise_na <- pre_data(EOC$D, EOC$CA125)
-#' dise_fact_na <- dise_na$D
+#' dise_fact_na <- dise_na$dise
 #' out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
 #'                   test = TRUE, trace = TRUE)
 #'

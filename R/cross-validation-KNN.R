@@ -52,7 +52,7 @@ cv_knn <- function(x_mat, dise_vec, veri_stat, k_list = NULL, type = "eucli",
   }
   nkk <- length(kk)
   cv_cri <- numeric(nkk)
-  rho_ver <- rho_knn(x_ver, y_ver, rep(1, n_ver), K = kk, type = type)
+  rho_ver <- rho_knn(x_ver, y_ver, rep(1, n_ver), k = kk, type = type)
   for (i in 1:nkk) {
     cv_cri[i] <- sum(colSums(abs(y_ver[, -3] - rho_ver[[i]]$values[, -3])))
   }

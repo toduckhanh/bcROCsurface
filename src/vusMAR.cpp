@@ -22,7 +22,7 @@ static inline double indvus(double a, double b, double c) {
 }
 
 // [[Rcpp::export]]
-double vusC(NumericVector tt, NumericMatrix dd){
+double vus_c(NumericVector tt, NumericMatrix dd){
   int nn = tt.size();
   double I_ijk = 0.0;
   double den = 0.0, num = 0.0, temp = 0.0;
@@ -45,7 +45,7 @@ double vusC(NumericVector tt, NumericMatrix dd){
 }
 
 // [[Rcpp::export]]
-double vusC_full(NumericVector tt1, NumericVector tt2, NumericVector tt3){
+double vus_c_full(NumericVector tt1, NumericVector tt2, NumericVector tt3){
   int nn1 = tt1.size(), nn2 = tt2.size(), nn3 = tt3.size();
   double num = 0.0;
   for(int i = 0; i < nn1; i++){
@@ -60,7 +60,7 @@ double vusC_full(NumericVector tt1, NumericVector tt2, NumericVector tt3){
 }
 
 // [[Rcpp::export]]
-List vusC_full_core(NumericVector tt1, NumericVector tt2, NumericVector tt3){
+List vus_c_full_core(NumericVector tt1, NumericVector tt2, NumericVector tt3){
   int nn1 = tt1.size(), nn2 = tt2.size(), nn3 = tt3.size();
   NumericVector out1(nn1), out2(nn2), out3(nn3);
   NumericMatrix I_ij(nn2, nn1);
