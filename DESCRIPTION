@@ -1,6 +1,6 @@
 Package: bcROCsurface
 Version: 1.0-6
-Date: 2023-09-03
+Date: 2023-09-09
 Title: Bias-Corrected Methods for Estimating the ROC Surface of Continuous Diagnostic Tests
 Author: Duc-Khanh To, with contributions from Monica Chiogna and Gianfranco Adimari
 Maintainer: Duc-Khanh To  <toduc@stat.unipd.it>
@@ -16,8 +16,7 @@ LazyData: TRUE
 ByteCompile: yes
 Encoding: UTF-8
 RoxygenNote: 7.2.3
-Suggests: webshot2, knitr, rmarkdown, markdown
+Suggests: knitr, rmarkdown, markdown
 URL: https://github.com/toduckhanh/bcROCsurface
 BugReports: https://github.com/toduckhanh/bcROCsurface/issues
-Additional_repositories: https://dmurdoch.github.io/drat
 VignetteBuilder: knitr

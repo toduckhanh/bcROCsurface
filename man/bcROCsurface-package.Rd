@@ -13,12 +13,12 @@ This package provides tools for correcting verification bias in the evaluation o
 Package: \tab bcROCsurface\cr
 Type: \tab Package\cr
 Version: \tab 1.0-6\cr
-Date: \tab 2023-09-03\cr
+Date: \tab 2023-09-09\cr
 License: \tab GPL 2 | GPL 3\cr
 Lazy load: \tab yes\cr
 }
 
-Major functions are \code{\link{ROCs}} and \code{\link{vus}}.
+Major functions are \code{\link{rocs}} and \code{\link{vus_mar}}.
 
 }
 

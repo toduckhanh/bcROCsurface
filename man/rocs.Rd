@@ -110,7 +110,7 @@ The argument \code{method} must be selected from the collection of the bias-corr
 
 The ellipsoidal confidence region of TCFs at a given cut point can be constructed by using a normal approximation and plotted in the ROC surface space. The confidence level (default) is 0.95.
 
-Note that, before using the functions \code{rocs} and \code{rocs.tcf}, the use of \code{\link{preDATA}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
+Note that, before using the functions \code{rocs} and \code{rocs.tcf}, the use of \code{\link{pre_data}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
 }
 \examples{
 data(EOC)

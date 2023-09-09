@@ -7,11 +7,11 @@
 ## the derivative of function h(beta, theta, tau)
 h_deriv <- function(thet, bet, n_nuis) {
   res <- matrix(0, nrow = (6 + n_nuis), ncol = 3)
-  res[, 1] <- c(bet[1] / thet[1] ^ 2, 0, -1 / thet[1], 0, 0, 0, rep(0, n_nuis))
-  res[, 2] <- c(0, -(bet[2] - bet[3]) / thet[2] ^ 2, 0, 1 / thet[2],
+  res[, 1] <- c(bet[1] / thet[1]^2, 0, -1 / thet[1], 0, 0, 0, rep(0, n_nuis))
+  res[, 2] <- c(0, -(bet[2] - bet[3]) / thet[2]^2, 0, 1 / thet[2],
                 -1 / thet[2], 0, rep(0, n_nuis))
-  res[, 3] <- c(bet[4] / (1 - thet[1] - thet[2]) ^ 2,
-                bet[4] / (1 - thet[1] - thet[2]) ^ 2,
+  res[, 3] <- c(bet[4] / (1 - thet[1] - thet[2])^2,
+                bet[4] / (1 - thet[1] - thet[2])^2,
                 0, 0, 0, 1 / (1 - thet[1] - thet[2]), rep(0, n_nuis))
   return(t(res))
 }
@@ -42,7 +42,7 @@ pi_inv_deriv <- function(u_matrix, pi_hat, pi_cov,
                 logit = -u_matrix * (1 - pi_hat) / pi_hat,
                 probit = -u_matrix *
                   as.numeric(dnorm(u_matrix %*% pi_cov)) / pi_hat,
-                threshold = -u_matrix / pi_hat ^ 2)
+                threshold = -u_matrix / pi_hat^2)
   return(res)
 }
 

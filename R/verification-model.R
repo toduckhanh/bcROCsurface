@@ -1,8 +1,8 @@
-####==========================================================================####
-## The R code for the verification models.                                      ##
-## The suggestion regression models are logit, probit and threshold. The        ##
-## default model is logit.                                                      ##
-####==========================================================================####
+####========================================================================####
+## The R code for the verification models.                                    ##
+## The suggestion regression models are logit, probit and threshold. The      ##
+## default model is logit.                                                    ##
+####========================================================================####
 #' @title Fitting verification models
 #'
 #' @description \code{psglm} is used to fit generalized linear models to the verification process. This function requires a symbolic formula of the linear predictor, and a specified regression model.

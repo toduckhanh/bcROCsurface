@@ -55,7 +55,7 @@
 #'
 #' The ellipsoidal confidence region of TCFs at a given cut point can be constructed by using a normal approximation and plotted in the ROC surface space. The confidence level (default) is 0.95.
 #'
-#' Note that, before using the functions \code{rocs} and \code{rocs.tcf}, the use of \code{\link{preDATA}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
+#' Note that, before using the functions \code{rocs} and \code{rocs.tcf}, the use of \code{\link{pre_data}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
 #'
 #' @return \code{rocs} returns a list, with the following components:
 #' \item{vals}{the estimates of TCFs at all cut points.}
@@ -326,7 +326,7 @@ rocs <- function(method = "full", diag_test, dise_vec, veri_stat,
          domain = NA)
   ## checking the argument diag_test
   if (missing(diag_test)) stop("argument \"diag_test\" is missing \n")
-  if (class(diag_test) != "numeric" || any(is.na(diag_test)))
+  if (!inherits(diag_test, "numeric") || any(is.na(diag_test)))
     stop("\"diag_test\" must be a numeric vector and not include NA values")
   name_diagnostic <- substitute(diag_test)
   if (!is.character(name_diagnostic))

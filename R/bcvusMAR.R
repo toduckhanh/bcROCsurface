@@ -8,7 +8,7 @@
 #'
 #' @description \code{vus_mar} computes bias-corrected estimates of the volume under the ROC surface for evaluating the accuracy of a continuous diagnostic test.
 #'
-#' @param method  name of bias-corrected estimation method to be used for estimating the VUS in presence of verification bias. See \code{\link{ROCs}} for more details.
+#' @param method  name of bias-corrected estimation method to be used for estimating the VUS in presence of verification bias. See \code{\link{rocs}} for more details.
 #' @param diag_test  a numeric vector containing the diagnostic test values. \code{NA} values are not admitted.
 #' @param dise_vec  a n * 3  binary matrix with the three columns, corresponding to three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
 #' @param veri_stat  a binary vector containing the verification status (1 verified, 0 not verified).
@@ -29,7 +29,7 @@
 #'
 #' The default value of the number of bootstrap replicates is 250.
 #'
-#' Note that, before apply the functions \code{vus_mar}, the use of \code{\link{preDATA}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
+#' Note that, before apply the functions \code{vus_mar}, the use of \code{\link{pre_data}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
 #'
 #' @return \code{vus_mar} returns an object of class inheriting from "vus_mar" class.
 #'
@@ -298,7 +298,7 @@ vus_mar <- function(method = "full", diag_test, dise_vec, veri_stat,
   }
   attr(ans, "name") <- method_name
   res <- list(vus_fit = ans, call = call)
-  class(res) <- "vus"
+  class(res) <- "vus_mar"
   if (ci) {
     var_ans <- asy_var_vus(res, diag_test = diag_test, dise_vec = dise_vec,
                            veri_stat = veri_stat, rho_est = rho_est,
@@ -315,7 +315,7 @@ vus_mar <- function(method = "full", diag_test, dise_vec, veri_stat,
                 p_val_norm = p_val_norm, ci_norm = cf_ans,
                 ci_logit = cf_ans_tran, call = call,
                 ci_level = ci_level, boot = boot, n_boot = n_boot)
-    class(res) <- "vus"
+    class(res) <- "vus_mar"
   }
   if (trace) cat("DONE\n")
   res

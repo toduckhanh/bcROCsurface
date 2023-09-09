@@ -18,7 +18,7 @@ asy_cov_tcf(
 )
 }
 \arguments{
-\item{obj_tcf}{a result of a call to \code{\link{rocs_tcf}}.}
+\item{obj_tcf}{a result of a call to \code{\link{rocs.tcf}}.}
 
 \item{diag_test}{a numeric vector containing the diagnostic test values. \code{NA} values of \code{diag_test} are not accepted.}
 
@@ -70,7 +70,7 @@ rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
                       test = TRUE)
 
 ## FI estimator
-fi_tcf <- rocs_tcf("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+fi_tcf <- rocs.tcf("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
                    veri_stat = EOC$V, rho_est = rho_out, cps = c(2, 4))
 fi_var <- asy_cov_tcf(fi_tcf, diag_test = EOC$CA125, dise_vec = dise_vec_na,
                       veri_stat = EOC$V, rho_est = rho_out)
@@ -95,7 +95,7 @@ ipw_var <- asy_cov_tcf(ipw_tcf, diag_test = EOC$CA125,
 spe_tcf <- rocs.tcf("spe", diag_test = EOC$CA125, dise_vec = dise_vec_na,
                     veri_stat = EOC$V, rho_est = rho_out, pi_est = pi_out,
                     cps = c(2, 4))
-spe_var <- asy_cov_tcf(spe.tcf, diag_test = EOC$CA125,
+spe_var <- asy_cov_tcf(spe_tcf, diag_test = EOC$CA125,
                        dise_vec = dise_vec_na, veri_stat = EOC$V,
                        rho_est = rho_out, pi_est = pi_out)
 

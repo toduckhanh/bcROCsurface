@@ -11,7 +11,7 @@ psknn <- function(x, y,
   type <- match.arg(type)
   dista <- switch(type,
                   eucli = function(xi, xx, sx_inv) {
-                    ss <- colSums((xi - t(xx)) ^ 2)
+                    ss <- colSums((xi - t(xx))^2)
                     return(sqrt(ss))
                   },
                   manha = function(xi, xx, sx_inv) {
@@ -92,12 +92,12 @@ asy_cov_knn <- function(diag_test, thet, bet, cc, pi_hat, rho_hat, k) {
   sig212 <- (sig_sq[2] + sig_sq_bet[2] - sig_sq_gam[2]) / 2
   sig222 <- (sig_sq[2] + sig_sq_bet[3] - sig_sq_gam[3]) / 2
   sig323 <- (sig_sq[3] + sig_sq_bet[4] - sig_sq_gam[4]) / 2
-  res[1, 1] <- bet[1] ^ 2 * sig_sq[1] / thet[1] ^ 4 +
-    sig_sq_bet[1] / thet[1] ^ 2 - 2 * bet[1] * sig111 / thet[1] ^ 3
-  res[2, 2] <- bet[5] ^ 2 * sig_sq[2] / thet[2] ^ 4 +
-    sig_sq_bet[5] / thet[2] ^ 2 - 2 * bet[5] * (sig212 - sig222) / thet[2] ^ 3
-  res[3, 3] <- bet[4] ^ 2 * sig_sq[3] / thet[3] ^ 4 +
-    sig_sq_bet[4] / thet[3] ^ 2 - 2 * bet[4] * sig323 / thet[3] ^ 3
+  res[1, 1] <- bet[1]^2 * sig_sq[1] / thet[1]^4 +
+    sig_sq_bet[1] / thet[1]^2 - 2 * bet[1] * sig111 / thet[1]^3
+  res[2, 2] <- bet[5]^2 * sig_sq[2] / thet[2]^4 +
+    sig_sq_bet[5] / thet[2]^2 - 2 * bet[5] * (sig212 - sig222) / thet[2]^3
+  res[3, 3] <- bet[4]^2 * sig_sq[3] / thet[3]^4 +
+    sig_sq_bet[4] / thet[3]^2 - 2 * bet[4] * sig323 / thet[3]^3
   ### Estimating xi_12
   omeg_sig12 <- mean((rho_hat[, 1] * rho_hat[, 2] * (1 - pi_hat)) *
                       ((k + 1) / k + (1 - pi_hat) / pi_hat))
@@ -111,9 +111,9 @@ asy_cov_knn <- function(diag_test, thet, bet, cc, pi_hat, rho_hat, k) {
   sig_2_11 <- -(thet[2] * bet[1] + omeg1112)
   sig_thet_12 <- -(thet[1] * thet[2] + omeg_sig12)
   res[1, 2] <- -sig_11_12_22 / (thet[1] * thet[2]) + bet[1] * sig_1_12_22 /
-                  (thet[1] ^ 2 * thet[2]) -
-                  bet[5] * (bet[1] * sig_thet_12 / thet[1] ^ 2 -
-                  sig_2_11 / thet[1]) / thet[2] ^ 2
+                  (thet[1]^2 * thet[2]) -
+                  bet[5] * (bet[1] * sig_thet_12 / thet[1]^2 -
+                  sig_2_11 / thet[1]) / thet[2]^2
   ###Estimating xi_13
   omeg1123 <- mean((diag_test >= cc[2]) * (rho_hat[, 1] * rho_hat[, 3] *
                    (1 - pi_hat)) * ((k + 1) / k + (1 - pi_hat) / pi_hat))
@@ -124,7 +124,7 @@ asy_cov_knn <- function(diag_test, thet, bet, cc, pi_hat, rho_hat, k) {
   sig_3_11 <- -(thet[3] * bet[1] + omeg311)
   res[1, 3] <- (bet[1] * sig_1_23 / thet[1] - sig_11_23) / (thet[1] * thet[3]) +
                 bet[4] * (bet[1] * (sig_sq[1] + sig_thet_12) / thet[1] +
-                            sig_3_11) / (thet[1] * thet[3] ^ 2)
+                            sig_3_11) / (thet[1] * thet[3]^2)
   ###Estimating xi_23
   omeg312 <- mean((diag_test >= cc[1]) * (rho_hat[, 2] * rho_hat[, 3] *
                   (1 - pi_hat)) * ((k + 1) / k + (1 - pi_hat) / pi_hat))
@@ -136,7 +136,7 @@ asy_cov_knn <- function(diag_test, thet, bet, cc, pi_hat, rho_hat, k) {
   sig_3_12_22 <- -(thet[3] * bet[5] + omeg3_12_22)
   res[2, 3] <- (sig_23_12_22 - bet[5] * sig_2_23 / thet[2]) /
     (thet[3] * thet[2]) + bet[4] * (-sig_3_12_22 - bet[5] *
-            (sig_sq[2] + sig_thet_12) / thet[2]) / (thet[2] * thet[3] ^ 2)
+            (sig_sq[2] + sig_thet_12) / thet[2]) / (thet[2] * thet[3]^2)
   res[lower.tri(res)] <- res[upper.tri(res)]
   return(res / n)
 }

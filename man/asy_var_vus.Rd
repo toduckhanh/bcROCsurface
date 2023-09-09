@@ -59,17 +59,11 @@ dise_fact_na <- dise_na$dise
 
 rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
                       test = TRUE)
-vus_fi <- vus("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
-              veri_stat = EOC$V, rho_est = rho_out, ci = FALSE)
+vus_fi <- vus_mar("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+                  veri_stat = EOC$V, rho_est = rho_out, ci = FALSE)
 var_fi <- asy_var_vus(vus_fi, diag_test = EOC$CA125, dise_vec = dise_vec_na,
                       veri_stat = EOC$V, rho_est = rho_out)
 
-\dontrun{
-var_bst_spe <- asy_var_vus(vus_spe, diag_test = EOC$CA125,
-                           dise_vec = dise_vec_na, veri_stat = EOC$V,
-                           rho_est = rho_out, pi_est = pi_out, boot = TRUE,
-                           parallel = TRUE)
-}
 
 
 }

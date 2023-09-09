@@ -39,7 +39,7 @@ rho_knn(
 \details{
 \code{type} should be selected as one of \code{"eucli"}, \code{"manha"}, \code{"canber"}, \code{"lagran"}, \code{"mahala"} corresponding to Euclidean, Manhattan, Canberra, Lagrange and Mahalanobis distance. In practice, the selection of a suitable distance is typically dictated by features of the data and possible subjective evaluations. For example, if the covariates are heterogeneous with respect to their variances (which is particularly true when the variables are measured on heterogeneous scales), the choice of the Mahalanobis distance may be a good choice.
 
-For the number of nearest neighbors, a small value of \code{k}, within the range 1-3, may be a good choice. In general, the choice of \code{K} may depend on the dimension of the feature space, and propose to use cross--validation to find \code{K} in case of high--dimensional covariate. See \code{\link{CVknn}}.
+For the number of nearest neighbors, a small value of \code{k}, within the range 1-3, may be a good choice. In general, the choice of \code{k} may depend on the dimension of the feature space, and propose to use cross--validation to find \code{k} in case of high--dimensional covariate. See \code{\link{cv_knn}}.
 }
 \examples{
 data(EOC)

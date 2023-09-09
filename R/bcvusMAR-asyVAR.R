@@ -51,17 +51,11 @@
 #'
 #' rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC,
 #'                       test = TRUE)
-#' vus_fi <- vus("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
-#'               veri_stat = EOC$V, rho_est = rho_out, ci = FALSE)
+#' vus_fi <- vus_mar("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+#'                   veri_stat = EOC$V, rho_est = rho_out, ci = FALSE)
 #' var_fi <- asy_var_vus(vus_fi, diag_test = EOC$CA125, dise_vec = dise_vec_na,
 #'                       veri_stat = EOC$V, rho_est = rho_out)
 #'
-#' \dontrun{
-#' var_bst_spe <- asy_var_vus(vus_spe, diag_test = EOC$CA125,
-#'                            dise_vec = dise_vec_na, veri_stat = EOC$V,
-#'                            rho_est = rho_out, pi_est = pi_out, boot = TRUE,
-#'                            parallel = TRUE)
-#' }
 #'
 #'
 #' @importFrom Rcpp evalCpp
@@ -72,8 +66,8 @@ asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
                         rho_est = NULL, pi_est = NULL, boot = FALSE,
                         n_boot = 250, parallel = FALSE,
                         ncpus = ifelse(parallel, detectCores() / 2, NULL)) {
-  if (!inherits(obj_vus, "vus"))
-    stop("The argument \"obj_vus\" is not a result of vus()")
+  if (!inherits(obj_vus, "vus_mar"))
+    stop("The argument \"obj_vus\" is not a result of vus_mar()")
   ## checking the argument diag_test
   if (missing(diag_test)) stop("argument \"diag_test\" is missing \n")
   if (!inherits(diag_test, "numeric") || any(is.na(diag_test)))
@@ -121,7 +115,7 @@ asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
       der_rho3 <- - (der_rho1 + der_rho2)
       q_fi <- asy_var_vus_c(diag_test, rho_est$values, vus_obj, score, hess,
                             der_rho1, der_rho2, der_rho3)
-      ans_var <- n ^ 4 * sum(q_fi ^ 2) / prod(colSums(rho_est$values) ^ 2)
+      ans_var <- n^4 * sum(q_fi^2) / prod(colSums(rho_est$values)^2)
     } else {
       bst_fi <- function(dt, inds, formula) {
         dat <- dt[inds, ]
@@ -151,9 +145,9 @@ asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
       der_d_msi2 <- t((1 - veri_stat) * rho_deriv(rho_est$X, rho_est$values,
                                           ref_level = "2"))
       der_d_msi3 <- - (der_d_msi1 + der_d_msi2)
-      q_msi <- asy_var_vus_C(diag_test, d_msi, vus_obj, score, hess, der_d_msi1,
+      q_msi <- asy_var_vus_c(diag_test, d_msi, vus_obj, score, hess, der_d_msi1,
                            der_d_msi2, der_d_msi3)
-      ans_var <- n ^ 4 * sum(q_msi ^ 2) / prod(colSums(d_msi) ^ 2)
+      ans_var <- n^4 * sum(q_msi^2) / prod(colSums(d_msi)^2)
     } else {
       bst_msi <- function(dt, inds, formula) {
         dat <- dt[inds, ]
@@ -185,10 +179,10 @@ asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
       der_d_ipw1 <- t(veri_stat * dise_vec_temp[, 1] * der_pi_inv)
       der_d_ipw2 <- t(veri_stat * dise_vec_temp[, 2] * der_pi_inv)
       der_d_ipw3 <- t(veri_stat * dise_vec_temp[, 3] * der_pi_inv)
-      q_ipw <- asy_var_vus_C(diag_test, d_ipw, vus_obj, score, hess, der_d_ipw1,
+      q_ipw <- asy_var_vus_c(diag_test, d_ipw, vus_obj, score, hess, der_d_ipw1,
                            der_d_ipw2, der_d_ipw3)
-      ans_var <- sum(q_ipw ^ 2) /
-        prod((colSums(d_ipw) / sum(veri_stat / pi_est$values)) ^ 2) / n ^ 2
+      ans_var <- sum(q_ipw^2) /
+        prod((colSums(d_ipw) / sum(veri_stat / pi_est$values))^2) / n^2
     } else {
       bst_ipw <- function(dt, inds, formula) {
         dat <- dt[inds, ]
@@ -237,9 +231,9 @@ asy_var_vus <- function(obj_vus, diag_test, dise_vec, veri_stat = NULL,
               veri_stat * (dise_vec_temp[, 2] - rho_est$values[, 2]) *
                 der_pi_inv))
       der_d_spe3 <- -(der_d_spe1 + der_d_spe2)
-      q_spe <- asy_var_vus_C(diag_test, d_spe, vus_obj, score, hess, der_d_spe1,
+      q_spe <- asy_var_vus_c(diag_test, d_spe, vus_obj, score, hess, der_d_spe1,
                            der_d_spe2, der_d_spe3)
-      ans_var <- n ^ 4 * sum(q_spe ^ 2) / prod(colSums(d_spe) ^ 2)
+      ans_var <- n^4 * sum(q_spe^2) / prod(colSums(d_spe)^2)
     } else {
       bst_spe <- function(dt, inds, formula_rho, formula_pi) {
         dat <- dt[inds, ]

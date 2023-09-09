@@ -21,7 +21,7 @@ vus_mar(
 )
 }
 \arguments{
-\item{method}{name of bias-corrected estimation method to be used for estimating the VUS in presence of verification bias. See \code{\link{ROCs}} for more details.}
+\item{method}{name of bias-corrected estimation method to be used for estimating the VUS in presence of verification bias. See \code{\link{rocs}} for more details.}
 
 \item{diag_test}{a numeric vector containing the diagnostic test values. \code{NA} values are not admitted.}
 
@@ -77,7 +77,7 @@ The standard error of the estimates are obtained through the function \code{\lin
 
 The default value of the number of bootstrap replicates is 250.
 
-Note that, before apply the functions \code{vus_mar}, the use of \code{\link{preDATA}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
+Note that, before apply the functions \code{vus_mar}, the use of \code{\link{pre_data}} might be needed to check the monotone ordering disease classes and to create the matrix format for disease status.
 }
 \examples{
 data(EOC)

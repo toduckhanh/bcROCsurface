@@ -10,7 +10,7 @@
 #' \code{asy_cov_tcf} computes the asymptotic variance-covariance matrix of full data (FULL) and bias-corrected estimators (i.e. full imputation, mean score imputation, inverse probability weighting, semiparametric efficient and K nearest neighbor) of TCFs.
 #'
 #'
-#' @param obj_tcf  a result of a call to \code{\link{rocs_tcf}}.
+#' @param obj_tcf  a result of a call to \code{\link{rocs.tcf}}.
 #' @param diag_test  a numeric vector containing the diagnostic test values. \code{NA} values of \code{diag_test} are not accepted.
 #' @param dise_vec a n * 3  binary matrix with three columns, corresponding to the three classes of the disease status. In row i, 1 in column j indicates that the i-th subject belongs to class j, with j = 1, 2, 3. A row of \code{NA} values indicates a non-verified subject.
 #' @param veri_stat  a binary vector containing the verification status (1 verified, 0 not verified).
@@ -59,7 +59,7 @@
 #'                       test = TRUE)
 #'
 #' ## FI estimator
-#' fi_tcf <- rocs_tcf("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
+#' fi_tcf <- rocs.tcf("fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 #'                    veri_stat = EOC$V, rho_est = rho_out, cps = c(2, 4))
 #' fi_var <- asy_cov_tcf(fi_tcf, diag_test = EOC$CA125, dise_vec = dise_vec_na,
 #'                       veri_stat = EOC$V, rho_est = rho_out)
@@ -84,7 +84,7 @@
 #' spe_tcf <- rocs.tcf("spe", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 #'                     veri_stat = EOC$V, rho_est = rho_out, pi_est = pi_out,
 #'                     cps = c(2, 4))
-#' spe_var <- asy_cov_tcf(spe.tcf, diag_test = EOC$CA125,
+#' spe_var <- asy_cov_tcf(spe_tcf, diag_test = EOC$CA125,
 #'                        dise_vec = dise_vec_na, veri_stat = EOC$V,
 #'                        rho_est = rho_out, pi_est = pi_out)
 #'
@@ -113,7 +113,7 @@ asy_cov_tcf <- function(obj_tcf, diag_test, dise_vec, veri_stat = NULL,
       stop("The \"obj_tcf\" is a list containing results of TCFs at more than 1 cut point! \n Please, choose one result of \"obj_tcf\" \n")
     else stop("The argument \"obj_tcf\" is not a result of roc.tcf()")
   }
-  if (class(obj_tcf) != "tcfs")
+  if (!inherits(obj_tcf, "tcfs"))
     stop("The argument \"obj_tcf\" is not a result of a call to roc.tcf()")
   ## checking the argument diag_test
   if (missing(diag_test)) stop("argument \"diag_test\" is missing \n")

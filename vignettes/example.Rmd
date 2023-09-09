@@ -1,9 +1,9 @@
 ---
-title: "Guide for Use bcROCsurface"
+title: "Guide for use bcROCsurface"
 author: "Khanh To Duc"
 date: '`r Sys.Date()`'
 vignette: >
-  %\VignetteIndexEntry{Guide for Use bcROCsurface}
+  %\VignetteIndexEntry{Guide for use bcROCsurface}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 output: html_document
@@ -99,8 +99,8 @@ knit_hooks$set(webgl = hook_webgl)
 
 ```{r ROCsFULL, webGL = TRUE}
 dise_vec_full <- dise_full$dise_vec
-rocs(method = "full", diag_test =  EOC$CA125, dise_vec = dise_vec_full, ncp = 30, 
-     ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+rocs(method = "full", diag_test =  EOC$CA125, dise_vec = dise_vec_full,
+     ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
 ```
 
 Here, we consider the full data, so we only need to put the arguments `diag_test` and `dise_vec`, and method is `full`.
@@ -119,20 +119,20 @@ vus_mar("full", diag_test = EOC$CA125, dise_vec = dise_vec_full, ci = TRUE)
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus_mar(method = "full", diag_test =  CA125, dise_vec = dise_vec.full, ci = TRUE, 
-##     parallel = TRUE)
+## CALL: vus_mar(method = "full", diag_test = EOC$CA125, dise_vec = dise_vec_full, 
+##     ci = TRUE)
 ##  
 ## Estimate of VUS: 0.5663 
-## Standard error: 0.0365 
+## Standard error: 0.0377 
 ## 
 ## Intervals :
 ## Level        Normal                Logit        
-## 95%   ( 0.4946,  0.6379 )   ( 0.4937,  0.6360 ) 
-## Estimation of Standard Error and Intervals are based on Bootstrap with 250 replicates
+## 95%   ( 0.4924,  0.6402 )   ( 0.4914,  0.6382 ) 
+## Estimation of Standard Error and Intervals are based on Jackknife approach
 ##
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
-## Normal-test         10.596 < 2.2e-16 ***
+## Normal-test         10.597 < 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
@@ -144,13 +144,15 @@ Now, we compute the FI and MSI estimator with missing data. First, we need to es
 dise_na <- pre_data(EOC$D, EOC$CA125)
 dise_vec_na <- dise_na$dise_vec
 dise_fact_na <- dise_na$dise
-rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC, test = TRUE)
+rho_out <- rho_mlogit(dise_fact_na ~ CA125 + CA153 + Age, data = EOC, 
+                      test = TRUE)
 ```
 
 The following command provides the ROC surface by means of FI esimator:
 ```{r ROCsFI, webgl = TRUE}
-rocs(method = "fi", diag_test =  EOC$CA125, dise_vec = dise_vec_na, veri_stat = EOC$V, 
-     rho_est = rho_out, ncp = 30, ellipsoid = TRUE, cpst = c(-0.56, 2.31))
+rocs(method = "fi", diag_test =  EOC$CA125, dise_vec = dise_vec_na, 
+     veri_stat = EOC$V, rho_est = rho_out, ncp = 30, ellipsoid = TRUE, 
+     cpst = c(-0.56, 2.31))
 ```
 And, for VUS:
 ```{r vusfi,  eval=FALSE}
@@ -167,8 +169,8 @@ vus_mar(method = "fi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus_mar(method = "fi", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
-##     ci = TRUE)
+## CALL: vus_mar(method = "fi", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+##     veri_stat = EOC$V, rho_est = rho_out, ci = TRUE)
 ##  
 ## Estimate of VUS: 0.515 
 ## Standard error: 0.0404 
@@ -206,8 +208,8 @@ vus_mar(method = "msi", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 ## Processing .... 
 ## DONE
 ## 
-## CALL: vus_mar(method = "msi", diag_test =  CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
-##     ci = TRUE)
+## CALL: vus_mar(method = "msi", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+##     veri_stat = EOC$V, rho_est = rho_out, ci = TRUE)
 ##  
 ## Estimate of VUS: 0.5183 
 ## Standard error: 0.0415 
@@ -253,8 +255,8 @@ vus_mar(method = "ipw", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus_mar(method = "ipw", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, pi_est = pi_out, 
-##     ci = TRUE)
+## CALL: vus_mar(method = "ipw", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+##     veri_stat = EOC$V, pi_est = pi_out, ci = TRUE)
 ## 
 ## Estimate of VUS: 0.55 
 ## Standard error: 0.0416 
@@ -293,8 +295,8 @@ vus_mar(method = "spe", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus_mar(method = "spe", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_out, 
-##     pi_est = pi_out, ci = TRUE)
+## CALL: vus_mar(method = "spe", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+##     veri_stat = EOC$V, rho_est = rho_out, pi_est = pi_out, ci = TRUE)
 ##  
 ## Estimate of VUS: 0.5581 
 ## Standard error: 0.0443 
@@ -344,20 +346,20 @@ vus_mar(method = "knn", diag_test = EOC$CA125, dise_vec = dise_vec_na,
 ## Processing .... 
 ## DONE
 ##
-## CALL: vus_mar(method = "knn", diag_test = CA125, dise_vec = dise_vec_na, veri_stat = V, rho_est = rho_1nn, 
-##     ci = TRUE, parallel = TRUE)
+## CALL: vus_mar(method = "knn", diag_test = EOC$CA125, dise_vec = dise_vec_na, 
+##     veri_stat = EOC$V, rho_est = rho_1nn, ci = TRUE, parallel = TRUE)
 ##  
 ## Estimate of VUS: 0.5123 
-## Standard error: 0.0433 
+## Standard error: 0.0468 
 ## 
 ## Intervals :
 ## Level        Normal                Logit        
-## 95%   ( 0.4275,  0.5970 )   ( 0.4279,  0.5959 )
+## 95%   ( 0.4205,  0.6040 )   ( 0.4212,  0.6025 )
 ## Estimation of Standard Error and Intervals are based on Bootstrap with 250 replicates
 ##
 ## Testing the null hypothesis H0: VUS = 1/6 
 ##             Test Statistic   P-value    
-## Normal-test         7.3048 1.388e-13 ***
+## Normal-test         7.3856 7.583e-14 ***
 ## ---
 ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 ```
