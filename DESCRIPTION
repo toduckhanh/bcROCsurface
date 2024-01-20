@@ -7,7 +7,7 @@ Maintainer: Duc-Khanh To  <toduc@stat.unipd.it>
 Description: The bias-corrected estimation methods for the receiver operating characteristics
   ROC surface and the volume under ROC surfaces (VUS) under missing at random (MAR)
   assumption.
-License: GPL (>= 2)
+License: GPL-3
 Depends: R(>= 3.5.0), nnet, rgl, boot, stats, utils, graphics, parallel
 Imports: Rcpp (>= 0.12.2)
 LinkingTo: Rcpp, RcppArmadillo
